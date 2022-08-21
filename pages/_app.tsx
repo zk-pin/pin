@@ -12,16 +12,10 @@ const theme = extendTheme({
         fontWeight: 'normal',
       },
     },
-    Input: {
-      baseStyle: {
-        borderColor: '#7B622B'
-      }
-    }
   },
   styles: {
     global: {
       a: {
-        color: '#7B622B',
         _hover: {
           textDecoration: 'underline',
         },
