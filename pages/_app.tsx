@@ -2,14 +2,16 @@ import '../styles/globals.css'
 import type { AppProps } from 'next/app';
 import { ChakraProvider } from '@chakra-ui/react';
 import { extendTheme } from '@chakra-ui/react';
+import { NavBar } from '@components/core/Navbar';
+import Footer from '@components/core/Footer';
+import { Meta } from '@components/core/Meta';
 
 /* Theming */
 const theme = extendTheme({
   components: {
     Button: {
       baseStyle: {
-        fontFamily: "Apple Garamond, serif",
-        fontWeight: 'normal',
+        fontWeight: 'bold',
       },
     },
   },
@@ -40,9 +42,14 @@ const theme = extendTheme({
 
 function App({ Component, pageProps }: AppProps) {
   return (
-    <ChakraProvider theme={theme}>
-      <Component {...pageProps} />
-    </ChakraProvider>
+    <>
+      <Meta />
+      <ChakraProvider theme={theme}>
+        <NavBar />
+        <Component {...pageProps} />
+        <Footer />
+      </ChakraProvider>
+    </>
   )
 }
 
