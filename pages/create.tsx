@@ -46,6 +46,9 @@ const CreatePool: NextPage = ({ }) => {
   });
 
   const onSubmit = async ({ title, description, threshold }: { title: string, description: string, threshold: number }) => {
+    if (!userHasValidSession) {
+      return;
+    }
     setLoading(true);
     const { privateKey, publicKey } = await generateNewKeyPair();
     setKeyPair({ privateKey, publicKey });
@@ -131,7 +134,8 @@ const CreatePool: NextPage = ({ }) => {
                   </NumberInputStepper>
                 </NumberInput>
               </HStack>
-              {(!submitted && !loading) && <Button type='submit' marginTop={4}>Submit</Button>}
+              {!userHasValidSession && <Text color='gray.600'>Please sign in before attempting to create a new commitment pool</Text>}
+              {(!submitted && !loading) && <Button disabled={!userHasValidSession} type='submit' marginTop={4}>Submit</Button>}
             </HStack>
             {(!submitted && loading) && <Button type='submit' marginTop={4} rightIcon={<Spinner />}>Submit</Button>}
             {(submitted && !loading) &&
