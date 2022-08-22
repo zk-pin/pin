@@ -2,7 +2,7 @@ import type { GetStaticProps, NextPage } from 'next'
 import styles from '@styles/Home.module.css'
 import prisma from '@utils/prisma';
 import { CommitmentPoolProps } from '@utils/types';
-import { Box, HStack, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, HStack, Text, VStack } from '@chakra-ui/react';
 import Link from 'next/link';
 import { PoolListItem } from '@components/PoolListItem';
 
@@ -17,12 +17,17 @@ const Home: NextPage<Props> = ({ pools }) => {
         <h1 className={styles.title}>
           Welcome to Power in Numbers!
         </h1>
-        <Text className={styles.description}>Commitment Pools</Text>
-        <VStack maxHeight='500px' overflow="scroll">
+        <Text className={styles.description}>Active Commitment Pools</Text>
+        <VStack maxHeight='500px' overflow="scroll" marginBottom={8}>
           {pools.map(
             (pool, idx) => <PoolListItem key={idx} pool={pool} />)
           }
         </VStack>
+        <Link href="/pool/create">
+          <Button>
+            Create Commitment Pool
+          </Button>
+        </Link>
       </Box>
     </Box>
   )
