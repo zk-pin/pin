@@ -1,3 +1,5 @@
+pragma circom 2.0.5;
+
 include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/escalarmulany.circom";
 
@@ -6,12 +8,12 @@ template Ecdh() {
   // Note: private key
   // Needs to be hashed, and then pruned before
   // supplying it to the circuit
-  signal private input private_key;
+  signal input private_key;
   signal input public_key[2];
 
   signal output shared_key;
 
-  var n = 253
+  var n = 253;
 
   component privBits = Num2Bits(n);
   privBits.in <== private_key;

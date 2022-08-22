@@ -1,22 +1,22 @@
+pragma circom 2.0.5;
+
 include "./utils/ecdh.circom";
 include "./utils/encrypt.circom";
 include "./utils/merkle.circom";
 include "./utils/pubKeyGen.circom";
+include "../node_modules/circomlib/circuits/mimcsponge.circom";
 
 //k size of element arrays
 //merkle proof is of depth d
-template Pin(k, d) {
-    assert(k >= 2);
-    assert(k <= 100);
-
+template Pin(d) {
     signal input poolPubKey;
     signal input merkleRoot;
     signal input msg;
-    signal input cyphertext[k];
+    signal input cyphertext[2];
 
     //private inputs
     signal input signerPrivKeyHash;
-    signal input signerPubKey[k]; 
+    signal input signerPubKey[2]; 
     signal input pathElements[d];
     signal input pathIndices[d];
 
@@ -31,13 +31,18 @@ template Pin(k, d) {
     component encrypt = Encrypt();
     encrypt.plaintext <== msg;
     encrypt.shared_key <== ecdh.shared_key;
-    cyphertext[0] <== encrypt.out[0];
-    cyphertext[1] <== encrypt.out[1];
+    cyphertext[0] === encrypt.out[0];
+    cyphertext[1] === encrypt.out[1];
 
     //public key in merkle tree of public keys
     component verifyMerkleProof = MerkleTreeChecker(d);
-    //TODO: FIX
-    verifyMerkleProof.leaf <== signerPubKey;
+
+    component hasher = MiMCSponge(2, 220, 1);
+    hasher.ins[0] <== signerPubKey[0];
+    hasher.ins[1] <== signerPubKey[1];
+    hasher.k <== 123;
+
+    verifyMerkleProof.leaf <== hasher.outs[0];
     verifyMerkleProof.root <== merkleRoot;
     for (var i = 0; i < d; i++) {
         verifyMerkleProof.pathElements[i] <== pathElements[i];
@@ -52,4 +57,4 @@ template Pin(k, d) {
 
 }
 
-component main { public [poolPubKey, merkleRoot, msg, cyphertext] } = Pin(2, 30);
+component main { public [poolPubKey, merkleRoot, msg, cyphertext] } = Pin(30);

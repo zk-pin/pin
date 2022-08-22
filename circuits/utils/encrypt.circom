@@ -1,9 +1,9 @@
-//symmetric key encryption inside of circom
+pragma circom 2.0.5;
 
-include "../../node_modules/circomlib/circuits/mimc.circom"
+include "../../node_modules/circomlib/circuits/mimc.circom";
 
 template EncryptBits(N) {
-  signal private input plaintext[N];
+  signal input plaintext[N];
   signal input shared_key;
   signal output out[N+1];
 
@@ -24,7 +24,7 @@ template EncryptBits(N) {
 }
 
 template Encrypt() {
-  signal private input plaintext;
+  signal input plaintext;
   signal input shared_key;
   signal output out[2];
 
