@@ -1,6 +1,6 @@
 import { Button, Flex, HStack, Spinner, Text } from "@chakra-ui/react"
 import { useRouter } from 'next/router';
-import { signOut, useSession } from 'next-auth/react';
+import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 export const NavBar = () => {
@@ -31,11 +31,11 @@ export const NavBar = () => {
       </Button>
     }
     {!session &&
-      <Link href="/api/auth/signin">
-        <Button size="lg" variant="ghost" isActive={isActive('/signup')}>
-          Login
-        </Button>
-      </Link>
+      // <Link href="/api/auth/signin">
+      <Button size="lg" variant="ghost" onClick={() => signIn()} isActive={isActive('/signup')}>
+        Login
+      </Button>
+      // </Link>
     }
     {session &&
       <HStack>
