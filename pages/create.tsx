@@ -16,7 +16,7 @@ const CreatePool: NextPage = ({ }) => {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const { hasCopied, onCopy } = useClipboard(keyPair.privateKey || '');
 
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const userHasValidSession = Boolean(session);
 
   // validation schema
@@ -55,13 +55,16 @@ const CreatePool: NextPage = ({ }) => {
 
     try {
       const body = { title, description, threshold, publicKey };
-      console.log('body', body)
       const result = await fetch('/api/newPool', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
       if (result.status === 200) {
+        var resultBody = await result.json();
+        // TODO: use dexie + fix security
+        localStorage.setItem(`commitment-pool-operator-priv-${resultBody.id}`, privateKey)
+        localStorage.setItem(`commitment-pool-operator-pub-${resultBody.id}`, publicKey)
         setSubmitted(true);
         setLoading(false);
       } else {

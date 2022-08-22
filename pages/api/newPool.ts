@@ -46,7 +46,8 @@ export default async function handler(
                 },
             },
         });
-        res.json(commitmentPool);
+        console.log(commitmentPool);
+        res.json({ ...commitmentPool, id: commitmentPool.id });
         return;
     } catch (err: any) {
         console.log(err);
