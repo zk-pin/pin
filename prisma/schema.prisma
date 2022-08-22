@@ -10,37 +10,80 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model commitment_pool {
+model CommitmentPool {
   id          Int      @id @unique @default(autoincrement())
   title       String
   description String? // optional description
   created_at  DateTime @default(now()) @db.Timestamptz(6)
 
-  operator   operator @relation(fields: [operatorId], references: [id])
+  operator   Operator @relation(fields: [operatorId], references: [id])
   operatorId Int      @unique
   threshold  Int // set by the operator (size after which everything is publicly revealed)
 
-  signatures    signature[]
-  revealed_keys global_public_key[] // remains empty until threshold reached
+  signatures    Signature[]
+  revealed_keys GlobalPublicKey[] // remains empty until threshold reached
 }
 
-model operator {
-  id              Int              @id @default(autoincrement())
+model Operator {
+  id              Int             @id @default(autoincrement())
   operator_key    String
-  commitment_pool commitment_pool?
+  commitment_pool CommitmentPool?
 }
 
-model signature {
-  id                Int             @id @default(autoincrement())
+model Signature {
+  id                Int            @id @default(autoincrement())
   ciphertext        String
-  commitment_pool   commitment_pool @relation(fields: [commitment_poolId], references: [id])
+  commitment_pool   CommitmentPool @relation(fields: [commitment_poolId], references: [id])
   commitment_poolId Int
 }
 
-model global_public_key {
-  id                Int              @id @default(autoincrement())
+model GlobalPublicKey {
+  id                Int             @id @default(autoincrement())
   pubkey            String
   twitter_handle    String
-  commitment_pool   commitment_pool? @relation(fields: [commitment_poolId], references: [id])
+  commitment_pool   CommitmentPool? @relation(fields: [commitment_poolId], references: [id])
   commitment_poolId Int?
+}
+
+// for OAuth
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id       String    @id @default(cuid())
+  name     String?
+  accounts Account[]
+  sessions Session[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

@@ -5,7 +5,7 @@ import { GetServerSideProps, NextPage } from 'next';
 import styles from '@styles/Home.module.css'
 
 export const getServerSideProps: GetServerSideProps = async ({ params }): Promise<any> => {
-  const pool = await prisma.commitment_pool.findUnique({
+  const pool = await prisma.commitmentPool.findUnique({
     where: {
       id: Number(params?.id),
     },

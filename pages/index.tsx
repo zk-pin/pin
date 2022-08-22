@@ -39,7 +39,7 @@ const Home: NextPage<Props> = ({ pools }) => {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const pools = await prisma.commitment_pool.findMany({
+  const pools = await prisma.commitmentPool.findMany({
   });
   return {
     props: { pools: JSON.parse(JSON.stringify(pools)) },

@@ -6,6 +6,9 @@ import { NavBar } from '@components/core/Navbar';
 import Footer from '@components/core/Footer';
 import { Meta } from '@components/core/Meta';
 
+/* Auth */
+import { SessionProvider } from 'next-auth/react';
+
 /* Theming */
 const theme = extendTheme({
   components: {
@@ -44,11 +47,13 @@ function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Meta />
-      <ChakraProvider theme={theme}>
-        <NavBar />
-        <Component {...pageProps} />
-        <Footer />
-      </ChakraProvider>
+      <SessionProvider session={pageProps.session}>
+        <ChakraProvider theme={theme}>
+          <NavBar />
+          <Component {...pageProps} />
+          <Footer />
+        </ChakraProvider>
+      </SessionProvider>
     </>
   )
 }
