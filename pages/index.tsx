@@ -2,11 +2,12 @@ import type { GetStaticProps, NextPage } from "next";
 import styles from "@styles/Home.module.css";
 import prisma from "@utils/prisma";
 import { CommitmentPoolProps } from "@utils/types";
-import { Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
+import { signIn, useSession } from "next-auth/react";
+import { Box, Button, HStack, Text, VStack, Image as ChakraImage } from "@chakra-ui/react";
 import Link from "next/link";
 import { PoolListItem } from "@components/PoolListItem";
-import { signIn, useSession } from "next-auth/react";
-import { Image as ChakraImage } from '@chakra-ui/react'
+import { generateNewKeyPairBigInt } from "../utils/crypto";
+import { useEffect } from "react";
 
 type Props = {
   pools: CommitmentPoolProps[];
@@ -14,6 +15,9 @@ type Props = {
 
 const Home: NextPage<Props> = ({ pools }) => {
   const { data: session } = useSession();
+  useEffect(() => {
+    console.log(generateNewKeyPairBigInt());
+  }, []);
 
   return (
     <Box className={styles.container}>
