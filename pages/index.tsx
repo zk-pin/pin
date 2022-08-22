@@ -5,12 +5,18 @@ import { CommitmentPoolProps } from "@utils/types";
 import { Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
 import Link from "next/link";
 import { PoolListItem } from "@components/PoolListItem";
+import React from "react";
+import { generateNewKeyPairBigInt } from "../utils/crypto";
 
 type Props = {
     pools: CommitmentPoolProps[];
 };
 
 const Home: NextPage<Props> = ({ pools }) => {
+    React.useEffect(() => {
+        console.log(generateNewKeyPairBigInt());
+    }, []);
+
     return (
         <Box className={styles.container}>
             <Box className={styles.main}>
