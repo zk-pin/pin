@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.0.8",
     "@chakra-ui/react": "^2.2.8",
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
@@ -18,14 +19,15 @@
     "circomlib": "^2.0.5",
     "crypto": "^1.0.1",
     "fixed-merkle-tree": "^0.7.3",
-    "framer-motion": "^7.2.0",
     "formik": "^2.2.9",
+    "framer-motion": "^7.2.0",
     "next": "12.2.5",
     "next-auth": "^4.10.3",
     "noble-ed25519": "^1.2.6",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "snarkjs": "^0.4.24"
+    "snarkjs": "^0.4.24",
+    "yup": "^0.32.11"
   },
   "devDependencies": {
     "@types/node": "18.7.9",
