@@ -7,7 +7,7 @@ import Footer from '@components/core/Footer';
 import { Meta } from '@components/core/Meta';
 
 /* Auth */
-import { SessionProvider } from 'next-auth/react';
+import { SessionProvider } from "next-auth/react"
 
 /* Theming */
 const theme = extendTheme({
@@ -43,11 +43,11 @@ const theme = extendTheme({
   },
 })
 
-function App({ Component, pageProps }: AppProps) {
+function App({ Component, pageProps: { session, ...pageProps }, }: AppProps) {
   return (
     <>
       <Meta />
-      <SessionProvider session={pageProps.session}>
+      <SessionProvider session={session} refetchInterval={5 * 60}>
         <ChakraProvider theme={theme}>
           <NavBar />
           <Component {...pageProps} />

@@ -8,6 +8,7 @@ const prisma = new PrismaClient()
 
 export default NextAuth({
   adapter: PrismaAdapter(prisma),
+  secret: process.env.NEXT_AUTH_SECRET,
   providers: [
     // TODO: validate that id and secret are valid
     TwitterProvider({

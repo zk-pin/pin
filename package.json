@@ -19,6 +19,7 @@
     "crypto": "^1.0.1",
     "fixed-merkle-tree": "^0.7.3",
     "framer-motion": "^7.2.0",
+    "formik": "^2.2.9",
     "next": "12.2.5",
     "next-auth": "^4.10.3",
     "noble-ed25519": "^1.2.6",
