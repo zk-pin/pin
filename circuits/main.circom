@@ -36,8 +36,12 @@ template Pin(k, d) {
 
     //public key in merkle tree of public keys
     component verifyMerkleProof = MerkleTreeChecker(d);
-    //TODO: FIX
-    verifyMerkleProof.leaf <== signerPubKey;
+
+    component hasher = MiMCSponge(2, 220, 1);
+    hasher.ins[0] <== signerPubKey[0];
+    hasher.ins[0] <== signerPubKey[1];
+
+    verifyMerkleProof.leaf <== hasher.hash;
     verifyMerkleProof.root <== merkleRoot;
     for (var i = 0; i < d; i++) {
         verifyMerkleProof.pathElements[i] <== pathElements[i];
