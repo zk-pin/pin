@@ -2,22 +2,22 @@ import type { GetStaticProps, NextPage } from "next";
 import styles from "@styles/Home.module.css";
 import prisma from "@utils/prisma";
 import { CommitmentPoolProps } from "@utils/types";
-import { Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
+import { signIn, useSession } from "next-auth/react";
+import { Box, Button, HStack, Text, VStack, Image as ChakraImage } from "@chakra-ui/react";
 import Link from "next/link";
 import { PoolListItem } from "@components/PoolListItem";
-import React from "react";
 import { generateNewKeyPairBigInt } from "../utils/crypto";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { useEffect } from "react";
 
 type Props = {
   pools: CommitmentPoolProps[];
 };
 
 const Home: NextPage<Props> = ({ pools }) => {
-  React.useEffect(() => {
-      console.log(generateNewKeyPairBigInt());
+  const { data: session } = useSession();
+  useEffect(() => {
+    console.log(generateNewKeyPairBigInt());
   }, []);
-  const { data: session, status } = useSession();
 
   return (
     <Box className={styles.container}>
@@ -32,13 +32,17 @@ const Home: NextPage<Props> = ({ pools }) => {
           </Button>
         }
         {session &&
-          <HStack>
-            <Text>
+          <HStack marginBottom={4}>
+            <ChakraImage
+              alt={`${session.user?.name}'s profile picture`}
+              src={session.user?.image || ''}
+              width={10}
+              height={10}
+              borderRadius={'50%'}
+            />
+            <Text fontWeight="bold">
               Signed in as {session?.user?.name}
             </Text>
-            <Button size="lg" variant="ghost" onClick={() => signOut()}>
-              Log out
-            </Button>
           </HStack>
         }
         <VStack maxHeight="500px" overflow="scroll" marginBottom={8}>
