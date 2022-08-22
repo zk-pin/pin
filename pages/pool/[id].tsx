@@ -45,6 +45,9 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
   const signAttestation = () => {
     // TODO:
+    if (!session) {
+      return;
+    }
     localStorage.setItem(`signed-pool-${props.id}`, 'true');
   }
 
@@ -55,11 +58,11 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
           <Text as='h1' textAlign='center'>
             {props.title}
           </Text>
-          {/* TODO: fix the date parsing */}
-          <Text>Created at: {Date.parse(props.created_at).toString()}</Text>
-          <Text>Threshold: {props.threshold}</Text>
+          <Text>Created at: {new Date(Date.parse(props.created_at)).toDateString()} {new Date(Date.parse(props.created_at)).toLocaleTimeString()} </Text>
+          <Text>{props.signatures?.length || 0}/{props.threshold} signatures before reveal</Text>
+          {!session && <Text color='gray.600'>Please sign in to attest</Text>}
           {(!isOperator && !alreadySigned)
-            && <Button onClick={signAttestation}>
+            && <Button disabled={!session} onClick={signAttestation}>
               Sign attestation
             </Button>
           }
