@@ -33,11 +33,9 @@ export const NavBar = () => {
       </Button>
     }
     {!session &&
-      // <Link href="/api/auth/signin">
       <Button size="lg" variant="ghost" onClick={() => signIn()} isActive={isActive('/signup')}>
         Login
       </Button>
-      // </Link>
     }
     {session &&
       <HStack>
