@@ -1,28 +1,27 @@
 import { Box, Button, Input, Text } from '@chakra-ui/react';
 import styles from '@styles/Home.module.css'
+import { generateNewKeyPair, generateNewKeyPairHex } from '@utils/crypto';
 import { generateKeyPairSync } from 'crypto';
 import { useFormik } from 'formik';
 import { NextPage } from 'next';
 
 const CreatePool: NextPage = ({ }) => {
-  // TODO: generate operator pub and priv key pair
-  // const keypair = generateKeyPairSync(
-  //   'eddsa',
-  //   {
-  //     privateKeyEncoding: { format: 'pem', type: 'pkcs8' },
-  //     publicKeyEncoding: { format: 'pem', type: 'spki' }
-  //   }
-  // )
-
   const formik = useFormik({
     initialValues: {
       title: '',
       description: '',
     },
-    onSubmit: (values: any) => {
-      alert(JSON.stringify(values, null, 2));
+    // TODO: add validation
+    onSubmit: (values) => {
+      onSubmit(values);
     },
   });
+
+  const onSubmit = async ({ title, description }: { title: string, description: string }) => {
+    const { privateKey, publicKey } = await generateNewKeyPair();
+    console.log(privateKey, publicKey);
+    alert(JSON.stringify({ title, description }));
+  }
 
   return (
     <Box className={styles.container}>
