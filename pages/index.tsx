@@ -4,6 +4,7 @@ import prisma from '@utils/prisma';
 import { CommitmentPoolProps } from '@utils/types';
 import { Box, HStack, Text, VStack } from '@chakra-ui/react';
 import Link from 'next/link';
+import { PoolListItem } from '@components/PoolListItem';
 
 type Props = {
   pools: CommitmentPoolProps[]
@@ -19,18 +20,7 @@ const Home: NextPage<Props> = ({ pools }) => {
         <Text className={styles.description}>Commitment Pools</Text>
         <VStack maxHeight='500px' overflow="scroll">
           {pools.map(
-            (pool, idx) => {
-              return (
-                <Link key={idx} href={`pool/${pool.id}`}>
-                  <Box as="button">
-                    <HStack textAlign='start' width="100%">
-                      <Text>{pool.id}</Text>
-                      <Text>{pool.title}</Text>
-                    </HStack>
-                  </Box>
-                </Link>
-              )
-            })
+            (pool, idx) => <PoolListItem key={idx} pool={pool} />)
           }
         </VStack>
       </Box>
