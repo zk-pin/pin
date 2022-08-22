@@ -30,7 +30,7 @@ const Home: NextPage<Props> = ({ pools }) => {
         <Box className={styles.container}>
             <Box className={styles.main}>
                 <h1 className={styles.title}>Welcome to Power in Numbers!</h1>
-                <Text className={styles.description}>
+                <Text fontWeight="bold" className={styles.description}>
                     Active Commitment Pools
                 </Text>
                 {!session && (
@@ -57,7 +57,7 @@ const Home: NextPage<Props> = ({ pools }) => {
                         <PoolListItem key={idx} pool={pool} />
                     ))}
                 </VStack>
-                <Link href="/pool/create">
+                <Link href="/create">
                     <Button>Create Commitment Pool</Button>
                 </Link>
             </Box>
