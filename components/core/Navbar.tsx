@@ -2,6 +2,7 @@ import { Button, Flex, HStack, Spinner, Text } from "@chakra-ui/react"
 import { useRouter } from 'next/router';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { Image as ChakraImage } from '@chakra-ui/react'
 
 export const NavBar = () => {
   const router = useRouter();
@@ -14,6 +15,7 @@ export const NavBar = () => {
     as="header"
     position="fixed"
     alignContent="space-evenly"
+    justifyContent="space-between"
     w="100%"
     p={2}
     px={4}
@@ -39,9 +41,18 @@ export const NavBar = () => {
     }
     {session &&
       <HStack>
-        <Text>
-          {session?.user?.name} ({session?.user?.email})
-        </Text>
+        <HStack>
+          <ChakraImage
+            alt={`${session.user?.name}'s profile picture`}
+            src={session.user?.image || ''}
+            width={10}
+            height={10}
+            borderRadius={'50%'}
+          />
+          <Text fontWeight="bold">
+            Hi {session?.user?.name}
+          </Text>
+        </HStack>
         <Button size="lg" variant="ghost" onClick={() => signOut()}>
           Log out
         </Button>
