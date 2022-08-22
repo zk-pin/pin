@@ -11,6 +11,26 @@ export const generateNewKeyPairHex = () => {
     return "0x" + Buffer.from(privateKey).toString("hex");
 };
 
+// required for front-end
+// DO NOT DELETE
+export const generateNewKeyPair = async () => {
+    const privateKey = ed.utils.randomPrivateKey();
+    const privateKeyAsHex = "0x" + Buffer.from(privateKey).toString("hex");
+    const publicKey = await ed.getPublicKey(privateKey);
+    const publicKeyAsHex = "0x" + Buffer.from(publicKey).toString("hex");
+    return {
+        privateKey: privateKeyAsHex,
+        publicKey: publicKeyAsHex,
+    };
+};
+
+export const getPublicKeyFromPrivate = async (privKey: string) => {
+    const privateKeyBytes = Uint8Array.from(
+        Buffer.from(privKey.slice(2), "hex")
+    );
+    const publicKey = await ed.getPublicKey(privateKeyBytes);
+    return "0x" + Buffer.from(publicKey).toString("hex");
+};
 //@ts-ignore
 let eddsa: any;
 
