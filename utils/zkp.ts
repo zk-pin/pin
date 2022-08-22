@@ -31,17 +31,14 @@ export function pubkeyToXYArrays(pk: string) {
 //input: list of public keys stored as hex
 //merkle tree of list of "sybil-proof" public keys - leaves are the Mimc hash of Eddsa public keys (split into an array of
 //2 elements to be compatible with construction in the snark), so we need to convert leafPublicKeys into that
-export function createMerkleTree(
-    currReaderAddr: string,
-    leafPublicKeys: string[]
-) {
+export function createMerkleTree(currLeaf: string, leafPublicKeys: string[]) {
     //Yes the @ts-ignores are not ideal but unfortunately they're necessary because
     //the type definitions do not support bigints
     //@ts-ignore
 
     const formattedHashedAddrs: bigint[] = [];
     for (const pubKey of leafPublicKeys) {
-        formattedHashedAddrs.push(BigInt(formatHexPubKey(pubKey)));
+        formattedHashedAddrs.push(formatHexPubKey(pubKey));
     }
 
     const tree = new MerkleTree(
@@ -53,7 +50,7 @@ export function createMerkleTree(
     );
 
     //@ts-ignore
-    const path = tree.proof(BigInt(currReaderAddr));
+    const path = tree.proof(formatHexPubKey(currLeaf));
     return path;
 }
 
@@ -73,10 +70,12 @@ export function sigToRSArrays(sig: string) {
 const formatHexPubKey = (hexPubKey: string) => {
     //assumes hexPubKey stored with 0x prefic
     const arrPubKey = bigIntToArray(32, 2, BigInt(hexPubKey));
-    return mimcSponge(
-        arrPubKey.map((el) => modPBigInt(Number(el))),
-        1,
-        220,
-        123
-    )[0].toString();
+    return BigInt(
+        mimcSponge(
+            arrPubKey.map((el) => modPBigInt(Number(el))),
+            1,
+            220,
+            123
+        )[0].toString()
+    );
 };
