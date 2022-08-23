@@ -1,64 +1,69 @@
 //Much of this was ported from https://github.com/privacy-scaling-explorations/maci/blob/master/crypto/ts/index.ts
 
-import * as ed from "@noble/ed25519";
 import * as circomlibjs from "circomlibjs";
 import * as crypto from "crypto";
+const ff = require("ffjavascript");
+const createBlakeHash = require("blake-hash");
 import assert from "assert";
-import { createMerkleTree } from "./zkp";
+import { createMerkleTree, formatPubKey } from "./zkp";
+import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
+import { encrypt, decrypt } from "maci-crypto";
+import { ProofInput, SerializedKeyPair } from "./types";
 
-export const generateNewKeyPairHex = () => {
-    const privateKey = ed.utils.randomPrivateKey();
-    return "0x" + Buffer.from(privateKey).toString("hex");
+export const DELIMETER = "%--%";
+
+export const serializePubKey = (keyPair: Keypair): string => {
+  return (
+    keyPair.pubKey.rawPubKey[0].toString() +
+    DELIMETER +
+    keyPair.pubKey.rawPubKey[1].toString()
+  );
+};
+
+export const deserializePubKey = (serializedPubKey: string): BigInt[] => {
+  const splitString = serializedPubKey.split(DELIMETER);
+  return [BigInt(splitString[0]), BigInt(splitString[1])];
+};
+
+export const generatePrivKey = () => {
+  return new Keypair().privKey.rawPrivKey.toString();
 };
 
 // required for front-end
 // DO NOT DELETE
-export const generateNewKeyPair = async () => {
-    const privateKey = ed.utils.randomPrivateKey();
-    const privateKeyAsHex = "0x" + Buffer.from(privateKey).toString("hex");
-    const publicKey = await ed.getPublicKey(privateKey);
-    const publicKeyAsHex = "0x" + Buffer.from(publicKey).toString("hex");
-    return {
-        privateKey: privateKeyAsHex,
-        publicKey: publicKeyAsHex,
-    };
+// Note generateNewKeyPair returns a seriailized representation of the BigInt keys
+// privateKey: String(privKey)
+// publicKey: String(publicKey[0]) + "%--%" + String(publicKey[1])
+export const generateNewKeyPair = (): SerializedKeyPair => {
+  const pair = genKeypair();
+  return {
+    privateKey: pair.privKey.rawPrivKey.toString(),
+    publicKey: serializePubKey(pair),
+  };
 };
 
 export const getPublicKeyFromPrivate = async (privKey: string) => {
-    const privateKeyBytes = Uint8Array.from(
-        Buffer.from(privKey.slice(2), "hex")
-    );
-    const publicKey = await ed.getPublicKey(privateKeyBytes);
-    return "0x" + Buffer.from(publicKey).toString("hex");
+  return serializePubKey(new Keypair(new PrivKey(BigInt(privKey))));
 };
+
 //@ts-ignore
 let eddsa: any;
 
-type PrivKey = BigInt;
-type PubKey = BigInt[];
-type EcdhSharedKey = BigInt;
-type Plaintext = BigInt[];
-
 interface Ciphertext {
-    // The initialisation vector
-    iv: BigInt;
+  // The initialisation vector
+  iv: BigInt;
 
-    // The encrypted data
-    data: BigInt[];
-}
-
-interface Keypair {
-    privKey: PrivKey;
-    pubKey: PubKey;
+  // The encrypted data
+  data: BigInt[];
 }
 
 interface KeypairHex {
-    privKey: string;
-    pubKey: string;
+  privKey: string;
+  pubKey: string;
 }
 
 const SNARK_FIELD_SIZE = BigInt(
-    "21888242871839275222246405745257275088548364400416034343698204186575808495617"
+  "21888242871839275222246405745257275088548364400416034343698204186575808495617"
 );
 
 /*
@@ -71,150 +76,193 @@ const SNARK_FIELD_SIZE = BigInt(
  * @return A BabyJub-compatible random value.
  */
 const genRandomBabyJubValue = (): BigInt => {
-    // Prevent modulo bias
-    //const lim = BigInt('0x10000000000000000000000000000000000000000000000000000000000000000')
-    //const min = (lim - SNARK_FIELD_SIZE) % SNARK_FIELD_SIZE
-    const min = BigInt(
-        "6350874878119819312338956282401532410528162663560392320966563075034087161851"
-    );
+  // Prevent modulo bias
+  //const lim = BigInt('0x10000000000000000000000000000000000000000000000000000000000000000')
+  //const min = (lim - SNARK_FIELD_SIZE) % SNARK_FIELD_SIZE
+  const min = BigInt(
+    "6350874878119819312338956282401532410528162663560392320966563075034087161851"
+  );
 
-    let rand;
-    while (true) {
-        rand = BigInt("0x" + crypto.randomBytes(32).toString("hex"));
+  let rand;
+  while (true) {
+    rand = BigInt("0x" + crypto.randomBytes(32).toString("hex"));
 
-        if (rand >= min) {
-            break;
-        }
+    if (rand >= min) {
+      break;
     }
+  }
 
-    const privKey: PrivKey = rand % SNARK_FIELD_SIZE;
-    assert(privKey < SNARK_FIELD_SIZE);
+  const privKey: BigInt = rand % SNARK_FIELD_SIZE;
+  assert(privKey < SNARK_FIELD_SIZE);
 
-    return privKey;
+  return privKey;
 };
 
 export const genPrivKey = () => {
-    return genRandomBabyJubValue();
+  return genRandomBabyJubValue();
+};
+
+const bigIntToHex = (i: BigInt): string => {
+  return bigInt2Buffer(i).toString("hex");
 };
 
 /*
  * Convert a BigInt to a Buffer
  */
 const bigInt2Buffer = (i: BigInt): Buffer => {
-    let hexStr = i.toString(16);
-    while (hexStr.length < 64) {
-        hexStr = "0" + hexStr;
-    }
-    return Buffer.from(hexStr, "hex");
+  let hexStr = i.toString(16);
+  while (hexStr.length < 64) {
+    hexStr = "0" + hexStr;
+  }
+  return Buffer.from(hexStr, "hex");
 };
 
 const loadEddsa = async () => {
-    if (!eddsa) {
-        eddsa = await circomlibjs.buildEddsa();
-    }
-    return eddsa;
+  if (!eddsa) {
+    eddsa = await circomlibjs.buildEddsa();
+  }
+  return eddsa;
 };
+
+export const genKeypair = (): Keypair => {
+  return new Keypair();
+};
+
+export function uint8ArrToBigInt(uint8a: Uint8Array): bigint {
+  if (!(uint8a instanceof Uint8Array)) throw new Error("Expected Uint8Array");
+  return BigInt("0x" + bytesToHex(Uint8Array.from(uint8a)));
+}
+
+function bytesToHex(uint8a: Uint8Array): string {
+  // pre-caching chars could speed this up 6x.
+  let hex = "";
+  for (let i = 0; i < uint8a.length; i++) {
+    hex += hexes[uint8a[i]];
+  }
+  return hex;
+}
+
+const hexes = Array.from({ length: 256 }, (v, i) =>
+  i.toString(16).padStart(2, "0")
+);
 
 /*
- * @param privKey A private key generated using genPrivKey()
- * @return A public key associated with the private key
+ * An internal function which formats a random private key to be compatible
+ * with the BabyJub curve. This is the format which should be passed into the
+ * PublicKey and other circuits.
  */
-const genPubKey = async (privKey: PrivKey): Promise<PubKey> => {
-    privKey = BigInt(privKey.toString());
-    assert(privKey < SNARK_FIELD_SIZE);
-    await loadEddsa();
-    return eddsa.prv2pub(bigInt2Buffer(privKey));
+const formatPrivKeyForBabyJub = async (privKey: BigInt) => {
+  await loadEddsa();
+  const sBuff = eddsa.pruneBuffer(
+    createBlakeHash("blake512")
+      .update(bigInt2Buffer(privKey))
+      .digest()
+      .slice(0, 32)
+  );
+  const s = ff.utils.leBuff2int(sBuff);
+  return ff.Scalar.shr(s, 3);
 };
 
-export const genKeypair = async (): Promise<Keypair> => {
-    const privKey = genPrivKey();
-    const pubKey = await genPubKey(privKey);
+export const generateCircuitInputs = async (
+  serializedOpPubKey: string,
+  serializedSignerPrivKey: string,
+  sybilPubKeys: string[],
+  committmentPoolId: number
+): Promise<ProofInput> => {
+  const signer = new Keypair(new PrivKey(BigInt(serializedSignerPrivKey)));
+  const deserializedOpPubKey = deserializePubKey(serializedOpPubKey);
 
-    const keypair: Keypair = { privKey, pubKey };
+  const globalPubkeyPool = sybilPubKeys.map((el) => deserializePubKey(el));
 
-    return keypair;
+  const sharedSecret = Keypair.genEcdhSharedKey(
+    signer.privKey,
+    new PubKey(deserializedOpPubKey)
+  );
+
+  const plaintext: any[] = [BigInt(committmentPoolId)];
+
+  const ciphertext = await encrypt(plaintext, sharedSecret);
+  // const decryptedCiphertext = await decrypt(ciphertext, sharedSecret);
+  // console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
+
+  const merkle = createMerkleTree(signer.pubKey.rawPubKey, globalPubkeyPool);
+  const res = await prepareInputs(
+    deserializedOpPubKey,
+    signer.pubKey.rawPubKey,
+    signer.privKey.rawPrivKey,
+    ciphertext
+  );
+  return {
+    msg: BigInt(committmentPoolId).toString(),
+    merkleRoot: merkle.pathRoot.toString(),
+    pathElements: merkle.pathElements.map((el) => el.toString()),
+    pathIndices: merkle.pathIndices.map((el) => el.toString()),
+    ...res,
+  };
 };
 
-export const genKeypairHex = async (): Promise<KeypairHex> => {
-    const keypair = await genKeypair();
-    return {
-        privKey: bigInt2Buffer(keypair.privKey).toString("hex"),
-        pubKey: bigInt2Buffer(keypair.privKey).toString("hex"),
-    };
+const prepareInputs = async (
+  opPubkey: BigInt[],
+  signerPubkey: BigInt[],
+  signerPrivKey: BigInt,
+  ciphertext: Ciphertext
+) => {
+  return {
+    poolPubKey: opPubkey.map((el) => el.toString()),
+    signerPubKey: signerPubkey.map((el) => el.toString()),
+    ciphertext: [
+      ciphertext.iv.toString(),
+      ...ciphertext.data.map((el) => el.toString()),
+    ],
+    signerPrivKeyHash: (
+      await formatPrivKeyForBabyJub(signerPrivKey)
+    ).toString(),
+  };
 };
 
-const encrypt = async (
-    plaintext: Plaintext,
-    sharedKey: EcdhSharedKey
-): Promise<Ciphertext> => {
-    await loadEddsa();
-    // Generate the IV
-    const iv = eddsa.mimc7.multiHash(plaintext, BigInt(0));
+export async function testCircuit() {
+  const signer = genKeypair();
 
-    const ciphertext: Ciphertext = {
-        iv,
-        data: plaintext.map((e: BigInt, i: number): BigInt => {
-            return e + eddsa.mimc7.hash(sharedKey, iv + BigInt(i));
-        }),
-    };
+  const operator = genKeypair();
 
-    // TODO: add asserts here
-    return ciphertext;
-};
+  const publicKeyLeaves: BigInt[][] = [];
+  for (let i = 0; i < 5; i++) {
+    publicKeyLeaves.push(genKeypair().pubKey.rawPubKey);
+  }
+  publicKeyLeaves.push(signer.pubKey.rawPubKey);
 
-/*
- * Decrypts a ciphertext using a given key.
- * @return The plaintext.
- */
-const decrypt = async (
-    ciphertext: Ciphertext,
-    sharedKey: EcdhSharedKey
-): Promise<Plaintext> => {
-    await loadEddsa();
-    const plaintext: Plaintext = ciphertext.data.map(
-        (e: BigInt, i: number): BigInt => {
-            return (
-                (e as bigint) -
-                BigInt(
-                    eddsa.mimc7.hash(
-                        sharedKey,
-                        (ciphertext.iv as bigint) + BigInt(i)
-                    )
-                )
-            );
-        }
-    );
+  const sharedSecret = Keypair.genEcdhSharedKey(
+    signer.privKey,
+    operator.pubKey
+  );
 
-    return plaintext;
-};
+  const plaintext: any[] = [BigInt(1)];
 
-// export async function testCircuit() {
-//     const signer = await genKeypair();
+  const ciphertext = await encrypt(plaintext, sharedSecret);
+  // const decryptedCiphertext = await decrypt(ciphertext, sharedSecret);
+  // console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
 
-//     const operator = await genKeypair();
+  const res = await prepareInputs(
+    operator.pubKey.rawPubKey,
+    signer.pubKey.rawPubKey,
+    signer.privKey.rawPrivKey,
+    ciphertext
+  );
+  console.log("NEW SET!!!");
+  console.log(
+    JSONStringifyCustom(
+      createMerkleTree(signer.pubKey.rawPubKey, publicKeyLeaves)
+    )
+  );
+  console.log("sharedSecret: ", sharedSecret);
+  console.log(JSONStringifyCustom(res));
 
-//     const publicKeyLeaves: string[] = [];
-//     for (let i = 0; i < 5; i++) {
-//         publicKeyLeaves.push((await genKeypair()).pubKey);
-//     }
-//     publicKeyLeaves.push(signer.publicKey);
-
-//     const sharedSecret = ed.getSharedSecret(
-//         operator.publicKey,
-//         signer.privateKey
-//     );
-
-//     console.log("poolPubKey: ", operator.publicKey);
-//     console.log("msg: ");
-
-//     console.log(
-//         JSONStringifyCustom(createMerkleTree(signer.publicKey, publicKeyLeaves))
-//     );
-// }
+  return res;
+}
 
 export function JSONStringifyCustom(val: any) {
-    return JSON.stringify(
-        val,
-        (key, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
-    );
+  return JSON.stringify(
+    val,
+    (key, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
+  );
 }

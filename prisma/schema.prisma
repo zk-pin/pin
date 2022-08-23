@@ -32,6 +32,9 @@ model Operator {
 
 model Signature {
   id                Int            @id @default(autoincrement())
+  // for zkSNARK
+  proof Json
+  publicSignals Json
   ciphertext        String
   commitment_pool   CommitmentPool @relation(fields: [commitment_poolId], references: [id])
   commitment_poolId Int
@@ -78,6 +81,8 @@ model Session {
 
 model User {
   id            String    @id @default(cuid())
+  //TODO
+  seriailizedPublicKey String? @unique
   name          String?
   username      String?   @map("username")
   email         String?   @unique
