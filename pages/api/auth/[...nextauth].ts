@@ -4,41 +4,51 @@ import TwitterProvider from "next-auth/providers/twitter";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
 import { JWT } from "next-auth/jwt";
+import { Session } from "inspector";
+import { Keypair } from "maci-domainobjs";
+import { serializePubKey } from "../../../utils/crypto";
 
 const prisma = new PrismaClient();
 
 export default NextAuth({
-    adapter: PrismaAdapter(prisma),
-    secret: process.env.NEXT_AUTH_SECRET,
-    providers: [
-        // TODO: validate that id and secret are valid
-        TwitterProvider({
-            clientId: process.env.TWITTER_CLIENT_ID || "",
-            clientSecret: process.env.TWITTER_CLIENT_SECRET || "",
-            version: "2.0", // opt-in to Twitter OAuth 2.0
-        }),
-    ],
-    callbacks: {
-        async jwt({
-            token,
-            account,
-        }: {
-            token: JWT;
-            user?: User | undefined;
-            account?: Account | undefined;
-            profile?: Profile | undefined;
-            isNewUser?: boolean | undefined;
-        }) {
-            if (account?.provider && !token[account.provider]) {
-                token[account.provider] = {};
-            }
-            // if ( account?.accessToken ) {
-            //   token[account.provider].accessToken = account.accessToken;
-            // }
-            // if ( account?.refreshToken ) {
-            //   token[account.provider].refreshToken = account.refreshToken;
-            // }
-            return token;
-        },
+  adapter: PrismaAdapter(prisma),
+  secret: process.env.NEXT_AUTH_SECRET,
+  providers: [
+    // TODO: validate that id and secret are valid
+    TwitterProvider({
+      clientId: process.env.TWITTER_CLIENT_ID || "",
+      clientSecret: process.env.TWITTER_CLIENT_SECRET || "",
+      version: "2.0", // opt-in to Twitter OAuth 2.0
+    }),
+  ],
+  callbacks: {
+    async session({ session, token, user }) {
+      // Send properties to the client, like an access_token from a provider.
+      // @ts-ignore
+      session.user.id = user.id;
+      return session;
     },
+    async jwt({
+      token,
+      account,
+    }: {
+      token: JWT;
+      user?: User | undefined;
+      account?: Account | undefined;
+      profile?: Profile | undefined;
+      isNewUser?: boolean | undefined;
+    }) {
+      if (account?.provider && !token[account.provider]) {
+        token[account.provider] = {};
+      }
+
+      // if ( account?.accessToken ) {
+      //   token[account.provider].accessToken = account.accessToken;
+      // }
+      // if ( account?.refreshToken ) {
+      //   token[account.provider].refreshToken = account.refreshToken;
+      // }
+      return token;
+    },
+  },
 });

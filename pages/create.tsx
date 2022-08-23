@@ -25,6 +25,7 @@ import { SerializedKeyPair } from "@utils/types";
 import { useClipboard } from "@chakra-ui/react";
 import { CheckIcon, CopyIcon } from "@chakra-ui/icons";
 import { useSession } from "next-auth/react";
+import sha256 from "crypto-js/sha256";
 
 const CreatePool: NextPage = ({}) => {
   const [keyPair, setKeyPair] = useState<SerializedKeyPair | undefined>(
@@ -84,11 +85,13 @@ const CreatePool: NextPage = ({}) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (result.status === 200) {
+      if (result.status === 200 && session?.user) {
         var resultBody = await result.json();
         // TODO: use dexie + fix security
         localStorage.setItem(
-          `commitment-pool-operator-priv-${resultBody.id}`,
+          `commitment-pool-operator-priv-${resultBody.id}-${sha256(
+            session.user.id ?? ""
+          )}`,
           privateKey
         );
         localStorage.setItem(

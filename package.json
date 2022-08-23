@@ -22,6 +22,7 @@
         "circomlib": "^2.0.5",
         "circomlibjs": "^0.1.7",
         "crypto": "^1.0.1",
+        "crypto-js": "^4.1.1",
         "ffjavascript": "^0.2.55",
         "fixed-merkle-tree": "^0.7.3",
         "formik": "^2.2.9",
@@ -38,6 +39,7 @@
         "yup": "^0.32.11"
     },
     "devDependencies": {
+        "@types/crypto-js": "^4.1.1",
         "@types/node": "18.7.9",
         "@types/react": "18.0.17",
         "@types/react-dom": "18.0.6",

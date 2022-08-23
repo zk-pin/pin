@@ -6,7 +6,7 @@ const ff = require("ffjavascript");
 const createBlakeHash = require("blake-hash");
 import assert from "assert";
 import { createMerkleTree, formatPubKey } from "./zkp";
-import { Keypair, PrivKey } from "maci-domainobjs";
+import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 import { encrypt, decrypt } from "maci-crypto";
 import { SerializedKeyPair } from "./types";
 
@@ -23,6 +23,10 @@ export const serializePubKey = (keyPair: Keypair): string => {
 export const deserializePubKey = (serializedPubKey: string): BigInt[] => {
   const splitString = serializedPubKey.split(DELIMETER);
   return [BigInt(splitString[0]), BigInt(splitString[1])];
+};
+
+export const generatePrivKey = () => {
+  return new Keypair().privKey.rawPrivKey.toString();
 };
 
 // required for front-end
@@ -160,22 +164,19 @@ const formatPrivKeyForBabyJub = async (privKey: BigInt) => {
 };
 
 export const generateCircuitInputs = async (
-  serializedOpPrivKey: string,
-  serializedPrivKey: string,
-  serializedPubKey: string,
+  serializedOpPubKey: string,
+  serializedSignerPrivKey: string,
   sybilPubKeys: string[],
   committmentPoolId: number
 ) => {
-  const signer = new Keypair(new PrivKey(BigInt(serializedPrivKey)));
-
-  //generate operator key pair
-  const operator = new Keypair(new PrivKey(BigInt(serializedOpPrivKey)));
+  const signer = new Keypair(new PrivKey(BigInt(serializedSignerPrivKey)));
+  const deserializedOpPubKey = deserializePubKey(serializedOpPubKey);
 
   const globalPubkeyPool = sybilPubKeys.map((el) => deserializePubKey(el));
 
   const sharedSecret = Keypair.genEcdhSharedKey(
     signer.privKey,
-    operator.pubKey
+    new PubKey(deserializedOpPubKey)
   );
 
   const plaintext: any[] = [BigInt(committmentPoolId)];
@@ -184,12 +185,9 @@ export const generateCircuitInputs = async (
   // const decryptedCiphertext = await decrypt(ciphertext, sharedSecret);
   // console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
 
-  const merkle = createMerkleTree(
-    deserializePubKey(serializedPubKey),
-    globalPubkeyPool
-  );
+  const merkle = createMerkleTree(signer.pubKey.rawPubKey, globalPubkeyPool);
   const res = await prepareInputs(
-    operator.pubKey.rawPubKey,
+    deserializedOpPubKey,
     signer.pubKey.rawPubKey,
     signer.privKey.rawPrivKey,
     ciphertext
