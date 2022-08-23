@@ -16,6 +16,7 @@ import { PoolListItem } from "@components/PoolListItem";
 import { testCircuit } from "../utils/crypto";
 import { useEffect } from "react";
 import { genPair } from "../utils/pairs";
+import { Keypair } from "maci-domainobjs";
 
 type Props = {
     pools: CommitmentPoolProps[];
@@ -24,8 +25,11 @@ type Props = {
 const Home: NextPage<Props> = ({ pools }) => {
     const { data: session } = useSession();
     useEffect(() => {
+        const pair = new Keypair().privKey.rawPrivKey;
+        console.log(pair);
+        console.log(pair.toString());
         // testBroken();
-        testCircuit();
+        // testCircuit();
         // genPair();
     }, []);
 
