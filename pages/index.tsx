@@ -13,11 +13,9 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { PoolListItem } from "@components/PoolListItem";
-import { testCircuit } from "../utils/crypto";
 import { useEffect } from "react";
-import { genPair } from "../utils/pairs";
+import { updateUserPublicKey } from "../utils/api";
 import { Keypair } from "maci-domainobjs";
-import axios from "axios";
 
 type Props = {
   pools: CommitmentPoolProps[];
@@ -34,12 +32,6 @@ const Home: NextPage<Props> = ({ pools }) => {
   //TODO: double hacky this is duplicated in [id]
   useEffect(() => {
     //TODO: hacky fix to use globalComittmentPool
-    async function updateUserPublicKey(id: string, publicKey: string) {
-      await axios.put("/api/setPubKey", {
-        id,
-        publicKey,
-      });
-    }
     //TODO: make more secure or encrypt or ask to store offline
     if (
       session?.user &&

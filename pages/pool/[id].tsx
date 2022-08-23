@@ -1,6 +1,14 @@
-import { Box, Button, HStack, Input, Text, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  HStack,
+  Input,
+  Text,
+  useToast,
+  VStack,
+} from "@chakra-ui/react";
 import prisma from "@utils/prisma";
-import { CommitmentPoolProps } from "@utils/types";
+import { CommitmentPoolProps, ProofInput } from "@utils/types";
 import { GetServerSideProps, NextPage } from "next";
 import styles from "@styles/Home.module.css";
 import { useEffect, useState } from "react";
@@ -9,13 +17,13 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import {
   generateCircuitInputs,
-  generatePrivKey,
   getPublicKeyFromPrivate,
   serializePubKey,
 } from "@utils/crypto";
 import sha256 from "crypto-js/sha256";
-import { Keypair } from "maci-domainobjs";
-import axios from "axios";
+import { Keypair, PrivKey } from "maci-domainobjs";
+import { generateProof } from "../../utils/zkp";
+import { updateUserPublicKey } from "../../utils/api";
 
 export const getServerSideProps: GetServerSideProps = async ({
   params,
@@ -63,7 +71,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const [isOperator, setIsOperator] = useState(false);
   const [alreadySigned, setAlreadySigned] = useState(false);
 
-  console.log(props);
+  const toast = useToast();
 
   // figure out if current user is the operator
   useEffect(() => {
@@ -91,12 +99,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
   useEffect(() => {
     //TODO: hacky fix to use globalComittmentPool
-    async function updateUserPublicKey(id: string, publicKey: string) {
-      await axios.put("/api/setPubKey", {
-        id,
-        publicKey,
-      });
-    }
     //TODO: make more secure or encrypt or ask to store offline
     if (
       session?.user &&
@@ -115,29 +117,51 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   }, [session]);
 
   const signAttestation = async () => {
-    if (!session || !session.user) {
-      return;
+    try {
+      if (!session || !session.user) {
+        return;
+      }
+
+      //get signer private key
+      const privKey = localStorage.getItem(
+        `signer-priv-key-${session.user.id}`
+      );
+      if (!privKey) {
+        return;
+      }
+      //@ts-ignore
+      const serializedOpPubKey = props.operator.operator_key;
+      //@ts-ignore
+      const serializedPublicKeys: string[] = props.serializedPublicKeys;
+
+      console.log(serializedPublicKeys);
+
+      const input: ProofInput = await generateCircuitInputs(
+        serializedOpPubKey,
+        privKey,
+        serializedPublicKeys,
+        Number(props.id)
+      );
+
+      console.log(JSON.stringify(input));
+
+      const { proof, publicSignals } = (await generateProof(input)).data;
+      toast({
+        title: "Successfully signed and generated proof.",
+        status: "success",
+        duration: 1500,
+        isClosable: true,
+      });
+      localStorage.setItem(`signed-pool-${props.id}`, "true");
+    } catch (ex: unknown) {
+      console.error("Error signing attestation: ", ex);
+      toast({
+        title: "Uh oh something went wrong",
+        status: "error",
+        duration: 1500,
+        isClosable: true,
+      });
     }
-    // TODO: sign attestation
-    localStorage.setItem(`signed-pool-${props.id}`, "true");
-
-    //get signer private key
-    const privKey = localStorage.getItem(`signer-priv-key-${session.user.id}`);
-    if (!privKey) {
-      return;
-    }
-
-    //@ts-ignore
-    const serializedOpPubKey = props.operator.operator_key;
-    //@ts-ignore
-    const serializedPublicKeys: string[] = props.serializedPublicKeys;
-
-    const input = await generateCircuitInputs(
-      serializedOpPubKey,
-      privKey,
-      serializedPublicKeys,
-      props.id
-    );
   };
 
   // validation schema

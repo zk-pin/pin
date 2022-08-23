@@ -15,14 +15,14 @@ export type SerializedKeyPair = {
 };
 
 export interface ProofInput {
-  poolPubKey: BigInt[];
-  merkleRoot: BigInt;
-  msg: BigInt;
-  ciphertext: BigInt[];
-  signerPrivKeyHash: BigInt;
-  signerPubKey: BigInt[];
-  pathElements: BigInt[];
-  pathIndices: BigInt[];
+  poolPubKey: string[];
+  merkleRoot: string;
+  msg: string;
+  ciphertext: string[];
+  signerPrivKeyHash: string;
+  signerPubKey: string[];
+  pathElements: string[];
+  pathIndices: string[];
 }
 
 export type VKeyRespData = {

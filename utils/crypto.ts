@@ -8,7 +8,7 @@ import assert from "assert";
 import { createMerkleTree, formatPubKey } from "./zkp";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 import { encrypt, decrypt } from "maci-crypto";
-import { SerializedKeyPair } from "./types";
+import { ProofInput, SerializedKeyPair } from "./types";
 
 export const DELIMETER = "%--%";
 
@@ -168,7 +168,7 @@ export const generateCircuitInputs = async (
   serializedSignerPrivKey: string,
   sybilPubKeys: string[],
   committmentPoolId: number
-) => {
+): Promise<ProofInput> => {
   const signer = new Keypair(new PrivKey(BigInt(serializedSignerPrivKey)));
   const deserializedOpPubKey = deserializePubKey(serializedOpPubKey);
 
@@ -193,9 +193,10 @@ export const generateCircuitInputs = async (
     ciphertext
   );
   return {
-    merkleRoot: merkle.pathRoot,
-    pathElements: merkle.pathElements,
-    pathIndices: merkle.pathIndices,
+    msg: BigInt(committmentPoolId).toString(),
+    merkleRoot: merkle.pathRoot.toString(),
+    pathElements: merkle.pathElements.map((el) => el.toString()),
+    pathIndices: merkle.pathIndices.map((el) => el.toString()),
     ...res,
   };
 };
@@ -207,10 +208,15 @@ const prepareInputs = async (
   ciphertext: Ciphertext
 ) => {
   return {
-    poolPubKey: opPubkey,
-    signerPubKey: signerPubkey,
-    ciphertext: [ciphertext.iv, ...ciphertext.data],
-    signerPrivKeyHash: await formatPrivKeyForBabyJub(signerPrivKey),
+    poolPubKey: opPubkey.map((el) => el.toString()),
+    signerPubKey: signerPubkey.map((el) => el.toString()),
+    ciphertext: [
+      ciphertext.iv.toString(),
+      ...ciphertext.data.map((el) => el.toString()),
+    ],
+    signerPrivKeyHash: (
+      await formatPrivKeyForBabyJub(signerPrivKey)
+    ).toString(),
   };
 };
 
