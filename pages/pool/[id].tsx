@@ -8,6 +8,8 @@ import { useSession } from 'next-auth/react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { getPublicKeyFromPrivate } from '@utils/crypto';
+import { useLiveQuery } from "dexie-react-hooks";
+import { getOperatorData } from '@utils/dexie';
 
 export const getServerSideProps: GetServerSideProps = async ({ params }): Promise<any> => {
   const pool = await prisma.commitmentPool.findUnique({
@@ -26,16 +28,22 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const [isOperator, setIsOperator] = useState(false);
   const [alreadySigned, setAlreadySigned] = useState(false);
 
+  const cachedCommitmentPoolData = useLiveQuery(
+    async () => {
+      if (!session) { return; }
+      const operatorData = await getOperatorData(props.id)
+      return operatorData;
+    }, [session]);
+
   // figure out if current user is the operator
   useEffect(() => {
-    if (!session || !props.id) {
+    if (!session) {
       setIsOperator(false);
     }
-    const operatorPublicKey = localStorage.getItem(`commitment-pool-operator-pub-${props.id}`);
-    if (operatorPublicKey) {
+    if (cachedCommitmentPoolData?.operatorPublicKey) {
       setIsOperator(true);
     }
-  }, [setIsOperator, session, props.id])
+  }, [setIsOperator, session, cachedCommitmentPoolData])
 
   // figure out if this attestation has already been signed
   useEffect(() => {

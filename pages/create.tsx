@@ -65,6 +65,7 @@ const CreatePool: NextPage = ({ }) => {
         // TODO: use dexie + fix security
         localStorage.setItem(`commitment-pool-operator-priv-${resultBody.id}`, privateKey)
         localStorage.setItem(`commitment-pool-operator-pub-${resultBody.id}`, publicKey)
+
         setSubmitted(true);
         setLoading(false);
       } else {
