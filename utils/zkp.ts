@@ -31,15 +31,20 @@ export function pubkeyToXYArrays(pk: string) {
 //input: list of public keys stored as hex
 //merkle tree of list of "sybil-proof" public keys - leaves are the Mimc hash of Eddsa public keys (split into an array of
 //2 elements to be compatible with construction in the snark), so we need to convert leafPublicKeys into that
-export function createMerkleTree(currLeaf: string, leafPublicKeys: string[]) {
+export function createMerkleTree(
+    currPublicKey: BigInt[],
+    leafPublicKeys: BigInt[][]
+) {
     //Yes the @ts-ignores are not ideal but unfortunately they're necessary because
     //the type definitions do not support bigints
     //@ts-ignore
 
     const formattedHashedAddrs: bigint[] = [];
     for (const pubKey of leafPublicKeys) {
-        formattedHashedAddrs.push(formatHexPubKey(pubKey));
+        formattedHashedAddrs.push(formatPubKey(pubKey));
     }
+    const formattedLeafPubKey = formatPubKey(currPublicKey);
+    formattedHashedAddrs.push(formattedLeafPubKey);
 
     const tree = new MerkleTree(
         30,
@@ -50,7 +55,7 @@ export function createMerkleTree(currLeaf: string, leafPublicKeys: string[]) {
     );
 
     //@ts-ignore
-    const path = tree.proof(formatHexPubKey(currLeaf));
+    const path = tree.proof(formattedLeafPubKey);
     return path;
 }
 
@@ -66,10 +71,12 @@ export function sigToRSArrays(sig: string) {
     return [rArr, sArr];
 }
 
-//given hex public key, converts it to two element array, hashes those with Mimc (to match hashing format)
-const formatHexPubKey = (hexPubKey: string) => {
-    //assumes hexPubKey stored with 0x prefic
-    const arrPubKey = bigIntToArray(32, 2, BigInt(hexPubKey));
+//given hex public key or BigInt[2], computes similar-style hash to circom equivalent
+export const formatPubKey = (hexPubKey: string | BigInt[]) => {
+    let arrPubKey: bigint[] = [];
+    if (typeof hexPubKey === "string") {
+        arrPubKey = bigIntToArray(32, 2, BigInt(hexPubKey));
+    }
     return BigInt(
         mimcSponge(
             arrPubKey.map((el) => modPBigInt(Number(el))),

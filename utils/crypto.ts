@@ -1,15 +1,11 @@
 //Much of this was ported from https://github.com/privacy-scaling-explorations/maci/blob/master/crypto/ts/index.ts
 
-import * as ed from "@noble/ed25519";
 import * as circomlibjs from "circomlibjs";
 import * as crypto from "crypto";
+const ff = require("ffjavascript");
+const createBlakeHash = require("blake-hash");
 import assert from "assert";
-import { createMerkleTree } from "./zkp";
-
-export const generateNewKeyPairHex = () => {
-    const privateKey = ed.utils.randomPrivateKey();
-    return "0x" + Buffer.from(privateKey).toString("hex");
-};
+import { createMerkleTree, formatPubKey } from "./zkp";
 
 //@ts-ignore
 let eddsa: any;
@@ -77,6 +73,10 @@ export const genPrivKey = () => {
     return genRandomBabyJubValue();
 };
 
+const bigIntToHex = (i: BigInt): string => {
+    return bigInt2Buffer(i).toString("hex");
+};
+
 /*
  * Convert a BigInt to a Buffer
  */
@@ -93,6 +93,20 @@ const loadEddsa = async () => {
         eddsa = await circomlibjs.buildEddsa();
     }
     return eddsa;
+};
+
+export const testBroken = async () => {
+    await loadEddsa();
+    console.log("HELLO");
+    const plaintext = [BigInt(31), BigInt(12)];
+    const sharedKey =
+        BigInt(
+            17708171275687628017204240208069223834215068267368546344451334093183644322044
+        );
+    const ciphertext = await encrypt(plaintext, sharedKey);
+    const decrypted = await decrypt(ciphertext, sharedKey);
+    console.log("ciphertext: ", ciphertext, " decrypted: ", decrypted);
+    console.log("HELLO");
 };
 
 /*
@@ -123,18 +137,28 @@ export const genKeypairHex = async (): Promise<KeypairHex> => {
     };
 };
 
+const uint8ArrToBigInt = (arr: Uint8Array): BigInt => {
+    return BigInt("0x" + Buffer.from(arr).toString("hex"));
+};
+
 const encrypt = async (
     plaintext: Plaintext,
     sharedKey: EcdhSharedKey
 ): Promise<Ciphertext> => {
     await loadEddsa();
     // Generate the IV
-    const iv = eddsa.mimc7.multiHash(plaintext, BigInt(0));
-
+    const temp = eddsa.mimc7.multiHash(plaintext, BigInt(0));
+    console.log(Buffer.from(temp).toString("hex"));
+    const iv = uint8ArrToBigInt(eddsa.mimc7.multiHash(plaintext, BigInt(0)));
     const ciphertext: Ciphertext = {
         iv,
         data: plaintext.map((e: BigInt, i: number): BigInt => {
-            return e + eddsa.mimc7.hash(sharedKey, iv + BigInt(i));
+            return (
+                (BigInt(e) as bigint) +
+                (uint8ArrToBigInt(
+                    eddsa.mimc7.hash(sharedKey, iv + BigInt(i))
+                ) as bigint)
+            );
         }),
     };
 
@@ -151,14 +175,26 @@ const decrypt = async (
     sharedKey: EcdhSharedKey
 ): Promise<Plaintext> => {
     await loadEddsa();
+    console.log("look here: ", ciphertext);
     const plaintext: Plaintext = ciphertext.data.map(
         (e: BigInt, i: number): BigInt => {
+            console.log("------");
+            console.log(
+                e ===
+                    uint8ArrToBigInt(
+                        eddsa.mimc7.hash(
+                            sharedKey,
+                            BigInt(ciphertext.iv) + BigInt(i)
+                        )
+                    )
+            );
+            console.log("------");
             return (
-                (e as bigint) -
-                BigInt(
+                BigInt(e) -
+                uint8ArrToBigInt(
                     eddsa.mimc7.hash(
                         sharedKey,
-                        (ciphertext.iv as bigint) + BigInt(i)
+                        BigInt(ciphertext.iv) + BigInt(i)
                     )
                 )
             );
@@ -168,29 +204,93 @@ const decrypt = async (
     return plaintext;
 };
 
-// export async function testCircuit() {
-//     const signer = await genKeypair();
+/*
+ * Generates an Elliptic-curve Diffie–Hellman shared key given a private key
+ * and a public key.
+ * @return The ECDH shared key.
+ */
+const genEcdhSharedKey = async (
+    privKey: PrivKey,
+    pubKey: PubKey
+): Promise<EcdhSharedKey> => {
+    await loadEddsa();
+    return uint8ArrToBigInt(
+        eddsa.babyJub.mulPointEscalar(
+            pubKey,
+            formatPrivKeyForBabyJub(privKey)
+        )[0]
+    );
+};
 
-//     const operator = await genKeypair();
+/*
+ * An internal function which formats a random private key to be compatible
+ * with the BabyJub curve. This is the format which should be passed into the
+ * PublicKey and other circuits.
+ */
+const formatPrivKeyForBabyJub = (privKey: PrivKey) => {
+    const sBuff = eddsa.pruneBuffer(
+        createBlakeHash("blake512")
+            .update(bigInt2Buffer(privKey))
+            .digest()
+            .slice(0, 32)
+    );
+    const s = ff.utils.leBuff2int(sBuff);
+    return ff.Scalar.shr(s, 3);
+};
 
-//     const publicKeyLeaves: string[] = [];
-//     for (let i = 0; i < 5; i++) {
-//         publicKeyLeaves.push((await genKeypair()).pubKey);
-//     }
-//     publicKeyLeaves.push(signer.publicKey);
+const prepareInputs = (
+    opPubkey: Uint8Array[],
+    signerPubkey: Uint8Array[],
+    signerPrivKey: Uint8Array,
+    ciphertext: Ciphertext
+) => {
+    const formattedOpPubKey = opPubkey.map((el) => uint8ArrToBigInt(el));
+    const formattedSigPubKey = signerPubkey.map((el) => uint8ArrToBigInt(el));
+    const formattedPrivKey = uint8ArrToBigInt(signerPrivKey);
 
-//     const sharedSecret = ed.getSharedSecret(
-//         operator.publicKey,
-//         signer.privateKey
-//     );
+    return {
+        poolPubKey: formattedOpPubKey,
+        ciphertext,
+        signerPubkey: formattedSigPubKey,
+        signerPrivKeyHash: formattedPrivKey,
+    };
+};
 
-//     console.log("poolPubKey: ", operator.publicKey);
-//     console.log("msg: ");
+export async function testCircuit() {
+    const signer = await genKeypair();
 
-//     console.log(
-//         JSONStringifyCustom(createMerkleTree(signer.publicKey, publicKeyLeaves))
-//     );
-// }
+    const operator = await genKeypair();
+
+    const publicKeyLeaves: PubKey[] = [];
+    for (let i = 0; i < 5; i++) {
+        publicKeyLeaves.push((await genKeypair()).pubKey);
+    }
+    publicKeyLeaves.push(signer.pubKey);
+
+    const sharedSecret = await genEcdhSharedKey(
+        signer.privKey,
+        operator.pubKey
+    );
+
+    const plaintext: any[] = [
+        BigInt(Math.floor(Math.random() * 50)),
+        BigInt(Math.floor(Math.random() * 50)),
+    ];
+
+    // console.log(
+    //     JSONStringifyCustom(createMerkleTree(signer.pubKey, publicKeyLeaves))
+    // );
+
+    const ciphertext = await encrypt(plaintext, sharedSecret);
+    const decryptedCiphertext = await decrypt(ciphertext, sharedSecret);
+
+    console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
+    // await prepareInputs(operator.pubKey, signer.pubKey, signer.privKey, ciphertext);
+    // console.log("poolPubKey: ", operator.pubKey);
+    // console.log("signerPubKey: ", signer.pubKey);
+    // console.log("signerPrivKey: ", signer.privKey);
+    // console.log("ciphertext: ", ciphertext);
+}
 
 export function JSONStringifyCustom(val: any) {
     return JSON.stringify(

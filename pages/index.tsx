@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { PoolListItem } from "@components/PoolListItem";
-import { genKeypair } from "../utils/crypto";
+import { genKeypair, testBroken, testCircuit, testHash } from "../utils/crypto";
 import { useEffect } from "react";
 
 type Props = {
@@ -23,7 +23,8 @@ type Props = {
 const Home: NextPage<Props> = ({ pools }) => {
     const { data: session } = useSession();
     useEffect(() => {
-        genKeypair();
+        // testBroken();
+        testCircuit();
     }, []);
 
     return (
