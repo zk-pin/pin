@@ -38,6 +38,7 @@ template Encrypt() {
   hasher.x_in <== shared_key;
   hasher.k <== out[0];
   out[1] <== plaintext + hasher.out;
+
 }
 
 

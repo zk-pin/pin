@@ -6,6 +6,8 @@ const ff = require("ffjavascript");
 const createBlakeHash = require("blake-hash");
 import assert from "assert";
 import { createMerkleTree, formatPubKey } from "./zkp";
+import { Keypair } from "maci-domainobjs";
+import { encrypt, decrypt } from "maci-crypto";
 
 // required for front-end
 // DO NOT DELETE
@@ -41,11 +43,6 @@ interface Ciphertext {
 
     // The encrypted data
     data: BigInt[];
-}
-
-interface Keypair {
-    privKey: PrivKey;
-    pubKey: PubKey;
 }
 
 interface KeypairHex {
@@ -133,121 +130,116 @@ export const testBroken = async () => {
  * @param privKey A private key generated using genPrivKey()
  * @return A public key associated with the private key
  */
-const genPubKey = async (privKey: PrivKey): Promise<PubKey> => {
-    privKey = BigInt(privKey.toString());
-    assert(privKey < SNARK_FIELD_SIZE);
-    await loadEddsa();
-    return eddsa.prv2pub(bigInt2Buffer(privKey));
+// const genPubKey = async (privKey: PrivKey): Promise<PubKey> => {
+//     privKey = BigInt(privKey.toString());
+//     assert(privKey < SNARK_FIELD_SIZE);
+//     await loadEddsa();
+//     return eddsa.prv2pub(bigInt2Buffer(privKey));
+// };
+
+export const genKeypair = (): Keypair => {
+    return new Keypair();
 };
 
-export const genKeypair = async (): Promise<Keypair> => {
-    const privKey = genPrivKey();
-    const pubKey = await genPubKey(privKey);
+// export const genKeypairHex = async (): Promise<KeypairHex> => {
+//     const keypair = await genKeypair();
+//     return {
+//         privKey: bigInt2Buffer(keypair.privKey).toString("hex"),
+//         pubKey: bigInt2Buffer(keypair.privKey).toString("hex"),
+//     };
+// };
 
-    const keypair: Keypair = { privKey, pubKey };
+export function uint8ArrToBigInt(uint8a: Uint8Array): bigint {
+    if (!(uint8a instanceof Uint8Array)) throw new Error("Expected Uint8Array");
+    return BigInt("0x" + bytesToHex(Uint8Array.from(uint8a)));
+}
 
-    return keypair;
-};
+function bytesToHex(uint8a: Uint8Array): string {
+    // pre-caching chars could speed this up 6x.
+    let hex = "";
+    for (let i = 0; i < uint8a.length; i++) {
+        hex += hexes[uint8a[i]];
+    }
+    return hex;
+}
 
-export const genKeypairHex = async (): Promise<KeypairHex> => {
-    const keypair = await genKeypair();
-    return {
-        privKey: bigInt2Buffer(keypair.privKey).toString("hex"),
-        pubKey: bigInt2Buffer(keypair.privKey).toString("hex"),
-    };
-};
+const hexes = Array.from({ length: 256 }, (v, i) =>
+    i.toString(16).padStart(2, "0")
+);
 
-const uint8ArrToBigInt = (arr: Uint8Array): BigInt => {
-    return BigInt("0x" + Buffer.from(arr).toString("hex"));
-};
+// const encrypt = async (
+//     plaintext: Plaintext,
+//     sharedKey: EcdhSharedKey
+// ): Promise<Ciphertext> => {
+//     await loadEddsa();
+//     // Generate the IV
+//     const iv = uint8ArrToBigInt(eddsa.mimc7.multiHash(plaintext, BigInt(0)));
+//     const ciphertext: Ciphertext = {
+//         iv,
+//         data: plaintext.map((e: BigInt, i: number): BigInt => {
+//             return (
+//                 BigInt(e) +
+//                 uint8ArrToBigInt(eddsa.mimc7.hash(sharedKey, iv + BigInt(i)))
+//             );
+//         }),
+//     };
 
-const encrypt = async (
-    plaintext: Plaintext,
-    sharedKey: EcdhSharedKey
-): Promise<Ciphertext> => {
-    await loadEddsa();
-    // Generate the IV
-    const temp = eddsa.mimc7.multiHash(plaintext, BigInt(0));
-    console.log(Buffer.from(temp).toString("hex"));
-    const iv = uint8ArrToBigInt(eddsa.mimc7.multiHash(plaintext, BigInt(0)));
-    const ciphertext: Ciphertext = {
-        iv,
-        data: plaintext.map((e: BigInt, i: number): BigInt => {
-            return (
-                (BigInt(e) as bigint) +
-                (uint8ArrToBigInt(
-                    eddsa.mimc7.hash(sharedKey, iv + BigInt(i))
-                ) as bigint)
-            );
-        }),
-    };
-
-    // TODO: add asserts here
-    return ciphertext;
-};
+//     // TODO: add asserts here
+//     return ciphertext;
+// };
 
 /*
  * Decrypts a ciphertext using a given key.
  * @return The plaintext.
  */
-const decrypt = async (
-    ciphertext: Ciphertext,
-    sharedKey: EcdhSharedKey
-): Promise<Plaintext> => {
-    await loadEddsa();
-    console.log("look here: ", ciphertext);
-    const plaintext: Plaintext = ciphertext.data.map(
-        (e: BigInt, i: number): BigInt => {
-            console.log("------");
-            console.log(
-                e ===
-                    uint8ArrToBigInt(
-                        eddsa.mimc7.hash(
-                            sharedKey,
-                            BigInt(ciphertext.iv) + BigInt(i)
-                        )
-                    )
-            );
-            console.log("------");
-            return (
-                BigInt(e) -
-                uint8ArrToBigInt(
-                    eddsa.mimc7.hash(
-                        sharedKey,
-                        BigInt(ciphertext.iv) + BigInt(i)
-                    )
-                )
-            );
-        }
-    );
+// const decrypt = async (
+//     ciphertext: Ciphertext,
+//     sharedKey: EcdhSharedKey
+// ): Promise<Plaintext> => {
+//     await loadEddsa();
+//     const plaintext: Plaintext = ciphertext.data.map(
+//         (e: BigInt, i: number): BigInt => {
+//             return (
+//                 //@ts-ignore
+//                 BigInt(e) -
+//                 //@ts-ignore
+//                 uint8ArrToBigInt(
+//                     eddsa.mimc7.hash(
+//                         sharedKey,
+//                         //@ts-ignore
+//                         BigInt(ciphertext.iv) + BigInt(i)
+//                     )
+//                 )
+//             );
+//         }
+//     );
 
-    return plaintext;
-};
+//     return plaintext;
+// };
 
 /*
  * Generates an Elliptic-curve Diffie–Hellman shared key given a private key
  * and a public key.
  * @return The ECDH shared key.
  */
-const genEcdhSharedKey = async (
-    privKey: PrivKey,
-    pubKey: PubKey
-): Promise<EcdhSharedKey> => {
-    await loadEddsa();
-    return uint8ArrToBigInt(
-        eddsa.babyJub.mulPointEscalar(
-            pubKey,
-            formatPrivKeyForBabyJub(privKey)
-        )[0]
-    );
-};
+// const genEcdhSharedKey = async (
+//     privKey: PrivKey,
+//     pubKey: PubKey
+// ): Promise<EcdhSharedKey> => {
+//     await loadEddsa();
+//     return await eddsa.babyJub.mulPointEscalar(
+//         pubKey,
+//         formatPrivKeyForBabyJub(privKey)
+//     )[0];
+// };
 
 /*
  * An internal function which formats a random private key to be compatible
  * with the BabyJub curve. This is the format which should be passed into the
  * PublicKey and other circuits.
  */
-const formatPrivKeyForBabyJub = (privKey: PrivKey) => {
+const formatPrivKeyForBabyJub = async (privKey: PrivKey) => {
+    await loadEddsa();
     const sBuff = eddsa.pruneBuffer(
         createBlakeHash("blake512")
             .update(bigInt2Buffer(privKey))
@@ -258,58 +250,58 @@ const formatPrivKeyForBabyJub = (privKey: PrivKey) => {
     return ff.Scalar.shr(s, 3);
 };
 
-const prepareInputs = (
-    opPubkey: Uint8Array[],
-    signerPubkey: Uint8Array[],
-    signerPrivKey: Uint8Array,
+const prepareInputs = async (
+    opPubkey: BigInt[],
+    signerPubkey: BigInt[],
+    signerPrivKey: BigInt,
     ciphertext: Ciphertext
 ) => {
-    const formattedOpPubKey = opPubkey.map((el) => uint8ArrToBigInt(el));
-    const formattedSigPubKey = signerPubkey.map((el) => uint8ArrToBigInt(el));
-    const formattedPrivKey = uint8ArrToBigInt(signerPrivKey);
-
     return {
-        poolPubKey: formattedOpPubKey,
-        ciphertext,
-        signerPubkey: formattedSigPubKey,
-        signerPrivKeyHash: formattedPrivKey,
+        poolPubKey: opPubkey,
+        signerPubKey: signerPubkey,
+        ciphertext: [ciphertext.iv, ...ciphertext.data],
+        signerPrivKeyHash: await formatPrivKeyForBabyJub(signerPrivKey),
     };
 };
 
 export async function testCircuit() {
-    const signer = await genKeypair();
+    const signer = genKeypair();
 
-    const operator = await genKeypair();
+    const operator = genKeypair();
 
     const publicKeyLeaves: PubKey[] = [];
     for (let i = 0; i < 5; i++) {
-        publicKeyLeaves.push((await genKeypair()).pubKey);
+        publicKeyLeaves.push(genKeypair().pubKey.rawPubKey);
     }
-    publicKeyLeaves.push(signer.pubKey);
+    publicKeyLeaves.push(signer.pubKey.rawPubKey);
 
-    const sharedSecret = await genEcdhSharedKey(
+    const sharedSecret = Keypair.genEcdhSharedKey(
         signer.privKey,
         operator.pubKey
     );
 
-    const plaintext: any[] = [
-        BigInt(Math.floor(Math.random() * 50)),
-        BigInt(Math.floor(Math.random() * 50)),
-    ];
-
-    // console.log(
-    //     JSONStringifyCustom(createMerkleTree(signer.pubKey, publicKeyLeaves))
-    // );
+    const plaintext: any[] = [BigInt(1)];
 
     const ciphertext = await encrypt(plaintext, sharedSecret);
-    const decryptedCiphertext = await decrypt(ciphertext, sharedSecret);
+    // const decryptedCiphertext = await decrypt(ciphertext, sharedSecret);
+    // console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
 
-    console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
-    // await prepareInputs(operator.pubKey, signer.pubKey, signer.privKey, ciphertext);
-    // console.log("poolPubKey: ", operator.pubKey);
-    // console.log("signerPubKey: ", signer.pubKey);
-    // console.log("signerPrivKey: ", signer.privKey);
-    // console.log("ciphertext: ", ciphertext);
+    const res = await prepareInputs(
+        operator.pubKey.rawPubKey,
+        signer.pubKey.rawPubKey,
+        signer.privKey.rawPrivKey,
+        ciphertext
+    );
+    console.log("NEW SET!!!");
+    console.log(
+        JSONStringifyCustom(
+            createMerkleTree(signer.pubKey.rawPubKey, publicKeyLeaves)
+        )
+    );
+    console.log("sharedSecret: ", sharedSecret);
+    console.log(JSONStringifyCustom(res));
+
+    return res;
 }
 
 export function JSONStringifyCustom(val: any) {

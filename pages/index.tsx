@@ -13,8 +13,9 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { PoolListItem } from "@components/PoolListItem";
-import { genKeypair, testBroken, testCircuit, testHash } from "../utils/crypto";
+import { testCircuit } from "../utils/crypto";
 import { useEffect } from "react";
+import { genPair } from "../utils/pairs";
 
 type Props = {
     pools: CommitmentPoolProps[];
@@ -25,6 +26,7 @@ const Home: NextPage<Props> = ({ pools }) => {
     useEffect(() => {
         // testBroken();
         testCircuit();
+        // genPair();
     }, []);
 
     return (
