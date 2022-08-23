@@ -145,7 +145,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
       console.log(JSON.stringify(input));
 
-      const { proof, publicSignals } = (await generateProof(input)).data;
+      const { proof, publicSignals } = await generateProof(input);
       toast({
         title: "Successfully signed and generated proof.",
         status: "success",

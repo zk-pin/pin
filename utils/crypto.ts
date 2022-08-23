@@ -248,16 +248,16 @@ export async function testCircuit() {
     signer.privKey.rawPrivKey,
     ciphertext
   );
-  console.log("NEW SET!!!");
-  console.log(
-    JSONStringifyCustom(
-      createMerkleTree(signer.pubKey.rawPubKey, publicKeyLeaves)
-    )
-  );
-  console.log("sharedSecret: ", sharedSecret);
-  console.log(JSONStringifyCustom(res));
 
-  return res;
+  const merkle = createMerkleTree(signer.pubKey.rawPubKey, publicKeyLeaves);
+
+  return {
+    msg: BigInt(1).toString(),
+    merkleRoot: merkle.pathRoot.toString(),
+    pathElements: merkle.pathElements.map((el) => el.toString()),
+    pathIndices: merkle.pathIndices.map((el) => el.toString()),
+    ...res,
+  };
 }
 
 export function JSONStringifyCustom(val: any) {

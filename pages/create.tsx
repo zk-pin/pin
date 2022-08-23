@@ -34,7 +34,7 @@ const CreatePool: NextPage = ({}) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
   const { hasCopied, onCopy } = useClipboard(
-    (keyPair && keyPair.serializedPrivKey) || ""
+    (keyPair && keyPair.privateKey) || ""
   );
 
   const { data: session } = useSession();
