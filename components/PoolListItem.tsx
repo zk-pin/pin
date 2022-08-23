@@ -12,7 +12,6 @@ export const PoolListItem = ({ pool }: Props) => {
       <Box as="button" width={'100%'} border='0.5px' borderRadius={8} padding={4} background={'gray.50'} _hover={{ background: 'gray.100' }}>
         <HStack justifyContent='space-between' width="100%">
           <HStack textAlign='start' width="100%">
-            <Text>{pool.id}</Text>
             <Text>{pool.title}</Text>
           </HStack>
           <Spacer />
