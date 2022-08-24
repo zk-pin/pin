@@ -16,6 +16,7 @@ import { PoolListItem } from "@components/PoolListItem";
 import { useEffect } from "react";
 import { updateUserPublicKey } from "../utils/api";
 import { Keypair } from "maci-domainobjs";
+import { testCircuit } from "../utils/crypto";
 import { serializePubKey } from "@utils/crypto";
 import { useLiveQuery } from "dexie-react-hooks";
 import { addSignerDataToCache, getCachedSignerData } from "@utils/dexie";

@@ -239,8 +239,11 @@ export async function testCircuit() {
   const plaintext: any[] = [BigInt(1)];
 
   const ciphertext = await encrypt(plaintext, sharedSecret);
-  // const decryptedCiphertext = await decrypt(ciphertext, sharedSecret);
-  // console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
+  const decryptedCiphertext = await decrypt(
+    ciphertext,
+    Keypair.genEcdhSharedKey(operator.privKey, signer.pubKey)
+  );
+  console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
 
   const res = await prepareInputs(
     operator.pubKey.rawPubKey,
@@ -248,16 +251,16 @@ export async function testCircuit() {
     signer.privKey.rawPrivKey,
     ciphertext
   );
-  console.log("NEW SET!!!");
-  console.log(
-    JSONStringifyCustom(
-      createMerkleTree(signer.pubKey.rawPubKey, publicKeyLeaves)
-    )
-  );
-  console.log("sharedSecret: ", sharedSecret);
-  console.log(JSONStringifyCustom(res));
 
-  return res;
+  const merkle = createMerkleTree(signer.pubKey.rawPubKey, publicKeyLeaves);
+
+  return {
+    msg: BigInt(1).toString(),
+    merkleRoot: merkle.pathRoot.toString(),
+    pathElements: merkle.pathElements.map((el) => el.toString()),
+    pathIndices: merkle.pathIndices.map((el) => el.toString()),
+    ...res,
+  };
 }
 
 export function JSONStringifyCustom(val: any) {

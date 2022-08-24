@@ -3,6 +3,7 @@ import {
   Button,
   HStack,
   Input,
+  Spinner,
   Text,
   useToast,
   VStack,
@@ -22,18 +23,21 @@ import {
 } from "@utils/crypto";
 import { Keypair } from "maci-domainobjs";
 import { generateProof } from "@utils/zkp";
-import { updateUserPublicKey } from "@utils/api";
+import { setSignature, updateUserPublicKey } from "@utils/api";
 import { useLiveQuery } from "dexie-react-hooks";
 import { addOperatorDataToCache, getCachedSignerData, getCachedCommitmentPoolData, addSignerDataToCommitmentPoolInCache, addSignerDataToCache } from '@utils/dexie';
 import sha256 from "crypto-js/sha256";
+import { useRouter } from "next/router";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const { data: session } = useSession();
 
   const [isOperator, setIsOperator] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [alreadySigned, setAlreadySigned] = useState(false);
 
   const toast = useToast();
+  const router = useRouter();
 
   const cachedCommitmentPoolData = useLiveQuery(
     async () => {
@@ -45,6 +49,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const cachedSigner = useLiveQuery(
     async () => {
       if (!session) { return; }
+
       // @ts-ignore TODO:
       const signerData = await getCachedSignerData(sha256(session.user.id).toString());
       return signerData;
@@ -60,7 +65,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     if (!operatorUserId) { setIsOperator(false); return; }
 
     // @ts-ignore TODO:
-    if (sha256(operatorUserId).toString() === session.user.id) {
+    if (sha256(session.user.id).toString() === operatorUserId) {
       setIsOperator(true);
     }
   }, [setIsOperator, session, props.id, cachedCommitmentPoolData]);
@@ -90,8 +95,13 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     }
   }, [cachedSigner?.privateKey, session]);
 
+  const refreshData = () => {
+    router.replace(router.asPath);
+  };
+
   const signAttestation = async () => {
     try {
+      setIsLoading(true);
       if (!session || !session.user || !cachedSigner) {
         return;
       }
@@ -106,19 +116,18 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       const serializedOpPubKey = props.operator.operator_key;
       const serializedPublicKeys: string[] = props.serializedPublicKeys;
 
-      console.log(serializedPublicKeys); // TODO: remove
-
-      const input: ProofInput = await generateCircuitInputs(
+      const circuitInput: ProofInput = await generateCircuitInputs(
         serializedOpPubKey,
         privKey,
         serializedPublicKeys,
         Number(props.id)
       );
 
-      console.log(JSON.stringify(input)); // TODO: remove
+      console.log(JSON.stringify(circuitInput));
 
-      const { proof, publicSignals } = (await generateProof(input)).data;
-
+      const { proof, publicSignals } = await generateProof(circuitInput);
+      setSignature(proof, publicSignals, circuitInput.ciphertext, props.id);
+      await refreshData();
       toast({
         title: "Successfully signed and generated proof.",
         status: "success",
@@ -126,21 +135,21 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         isClosable: true,
       });
       addSignerDataToCommitmentPoolInCache(props.id, cachedSigner.publicKey);
+      setIsLoading(false);
     } catch (err: unknown) {
-      console.error("Error signing attestation: ", err); // TODO: remove
-
       toast({
         title: "Uh oh something went wrong",
         status: "error",
         duration: 3000,
         isClosable: true,
       });
+      setIsLoading(false);
     }
   };
 
   // validation schema
   const submitPrivateKeySchema = Yup.object().shape({
-    privateKey: Yup.string().length(66, "invalid length").required("Required"),
+    privateKey: Yup.string().length(77, "invalid length").required("Required"),
   });
 
   // submit operator private key form
@@ -178,8 +187,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             {new Date(Date.parse(props.created_at)).toLocaleTimeString()}{" "}
           </Text>
           <Text>
-            {props.signatures?.length || 0}/{props.threshold} signatures before
-            reveal
+            {/* @ts-ignore */}
+            {props.signatures || 0}/{props.threshold} signatures before reveal
           </Text>
           {!session && <Text color="gray.600">Please sign in to attest</Text>}
           {!isOperator && !alreadySigned && (
@@ -187,6 +196,12 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
               Sign attestation
             </Button>
           )}
+          {isOperator &&
+            <Box background="green.50" padding={4} borderRadius={8}>
+              <Text>Welcome back! You need to wait until the threshold has been reached to reveal. Come back later.
+              </Text>
+            </Box>}
+          {isLoading && <Spinner />}
           <VStack background="gray.50" padding={4} borderRadius={8}>
             <Text color="gray.600">
               {`Are you the operator? Sorry, we didn't recognize you but if you have your key pair handy we can sign you back in as an operator.`}
@@ -259,13 +274,21 @@ export const getServerSideProps: GetServerSideProps = async ({
     ).map((el) => el.seriailizedPublicKey),
   };
 
+  const numSignatures = {
+    signatures: await prisma.signature.count({
+      where: {
+        commitment_poolId: pool?.id,
+      },
+    }),
+  };
+
   return {
     props: {
       ...JSON.parse(JSON.stringify(pool)),
       ...JSON.parse(JSON.stringify(sybilAddresses)),
+      ...JSON.parse(JSON.stringify(numSignatures)),
     },
   };
 };
-
 
 export default CommitmentPool;

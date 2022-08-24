@@ -65,7 +65,7 @@ export function createMerkleTree(
 }
 
 export const generateProof = async (input: ProofInput) => {
-  return await snarkjs.groth16.fullProve(input, "/main.wasm", "main.zkey");
+  return await snarkjs.groth16.fullProve(input, "/main.wasm", "/main.zkey");
 };
 
 export const verifyProof = async (proof: JSON, publicSignals: JSON) => {
