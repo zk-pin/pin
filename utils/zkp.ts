@@ -1,7 +1,6 @@
 import axios from "axios";
 import MerkleTree from "fixed-merkle-tree";
-import { uint8ArrToBigInt } from "./crypto";
-import { mimcHash, mimcSponge, modPBigInt, modPBigIntNative } from "./mimc";
+import { mimcHash, mimcSponge } from "./mimc";
 import { ProofInput, VKeyRespData } from "./types";
 
 export function bigIntToArray(n: number, k: number, x: bigint) {
@@ -65,11 +64,13 @@ export function createMerkleTree(
 }
 
 export const generateProof = async (input: ProofInput) => {
+  // @ts-ignore TODO:
   return await snarkjs.groth16.fullProve(input, "/main.wasm", "/main.zkey");
 };
 
 export const verifyProof = async (proof: JSON, publicSignals: JSON) => {
   const vkey = await getVKeys();
+  // @ts-ignore TODO:
   const verifiedProof = await snarkjs.groth16.verify(
     vkey,
     publicSignals,
