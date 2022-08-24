@@ -1,7 +1,7 @@
 // dexie.ts
 import { DexieDatabase, ISigner } from "@utils/types";
 
-export const db = new DexieDatabase();
+export const cache = new DexieDatabase();
 
 export async function addOperatorDataToCache(
   commitmentPoolId: string,
@@ -11,12 +11,12 @@ export async function addOperatorDataToCache(
   operatorPrivateKey?: string
 ) {
   try {
-    let pool = await db.commitmentPools.get({
+    let pool = await cache.commitmentPools.get({
       commitmentPoolId: commitmentPoolId,
     });
 
     if (!pool) {
-      await db.commitmentPools.add({
+      await cache.commitmentPools.add({
         commitmentPoolId: commitmentPoolId,
         operatorPublicKey: operatorPublicKey,
         operatorId: operatorId,
@@ -35,7 +35,7 @@ export async function addSignerDataToCommitmentPoolInCache(
   signerPubKey: string
 ) {
   try {
-    await db.commitmentPools
+    await cache.commitmentPools
       .where("commitmentPoolId")
       .equals(commitmentPoolId)
       .modify((entry) => {
@@ -49,7 +49,7 @@ export async function addSignerDataToCommitmentPoolInCache(
 
 export async function getCachedCommitmentPoolData(commitmentPoolId: string) {
   try {
-    let pool = await db.commitmentPools.get({
+    let pool = await cache.commitmentPools.get({
       commitmentPoolId: commitmentPoolId,
     });
 
@@ -62,7 +62,7 @@ export async function getCachedCommitmentPoolData(commitmentPoolId: string) {
 
 export async function getCachedSignerData(hashedUserId: string) {
   try {
-    let signers = await db.signers.get({
+    let signers = await cache.signers.get({
       hashedUserId: hashedUserId,
     });
 
@@ -79,12 +79,12 @@ export async function addSignerDataToCache(
   privKey: string
 ) {
   try {
-    let signer = await db.signers.get({
+    let signer = await cache.signers.get({
       hashedUserId: hashedUserId,
     });
 
     if (!signer) {
-      await db.signers.add({
+      await cache.signers.add({
         hashedUserId,
         privateKey: privKey,
         publicKey: pubKey,
