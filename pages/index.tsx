@@ -16,6 +16,7 @@ import { PoolListItem } from "@components/PoolListItem";
 import { useEffect } from "react";
 import { updateUserPublicKey } from "../utils/api";
 import { Keypair } from "maci-domainobjs";
+import { testCircuit } from "../utils/crypto";
 
 type Props = {
   pools: CommitmentPoolProps[];
@@ -23,11 +24,11 @@ type Props = {
 
 const Home: NextPage<Props> = ({ pools }) => {
   const { data: session } = useSession();
-  // useEffect(() => {
-  //     // testBroken();
-  //     // testCircuit();
-  //     // genPair();
-  // }, []);
+  useEffect(() => {
+    // testBroken();
+    // testCircuit();
+    // genPair();
+  }, []);
 
   //TODO: double hacky this is duplicated in [id]
   useEffect(() => {

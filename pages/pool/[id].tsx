@@ -3,6 +3,7 @@ import {
   Button,
   HStack,
   Input,
+  Spinner,
   Text,
   useToast,
   VStack,
@@ -24,6 +25,8 @@ import sha256 from "crypto-js/sha256";
 import { Keypair, PrivKey } from "maci-domainobjs";
 import { generateProof } from "../../utils/zkp";
 import { updateUserPublicKey } from "../../utils/api";
+import axios from "axios";
+import { useRouter } from "next/router";
 
 export const getServerSideProps: GetServerSideProps = async ({
   params,
@@ -56,10 +59,19 @@ export const getServerSideProps: GetServerSideProps = async ({
     ).map((el) => el.seriailizedPublicKey),
   };
 
+  const numSignatures = {
+    signatures: await prisma.signature.count({
+      where: {
+        commitment_poolId: pool?.id,
+      },
+    }),
+  };
+
   return {
     props: {
       ...JSON.parse(JSON.stringify(pool)),
       ...JSON.parse(JSON.stringify(sybilAddresses)),
+      ...JSON.parse(JSON.stringify(numSignatures)),
     },
   };
 };
@@ -69,9 +81,11 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const { data: session } = useSession();
 
   const [isOperator, setIsOperator] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [alreadySigned, setAlreadySigned] = useState(false);
 
   const toast = useToast();
+  const router = useRouter();
 
   // figure out if current user is the operator
   useEffect(() => {
@@ -116,8 +130,13 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     }
   }, [session]);
 
+  const refreshData = () => {
+    router.replace(router.asPath);
+  };
+
   const signAttestation = async () => {
     try {
+      setIsLoading(true);
       if (!session || !session.user) {
         return;
       }
@@ -134,8 +153,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       //@ts-ignore
       const serializedPublicKeys: string[] = props.serializedPublicKeys;
 
-      console.log(serializedPublicKeys);
-
       const input: ProofInput = await generateCircuitInputs(
         serializedOpPubKey,
         privKey,
@@ -143,9 +160,14 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         Number(props.id)
       );
 
-      console.log(JSON.stringify(input));
-
       const { proof, publicSignals } = await generateProof(input);
+      await axios.put("/api/setSignature", {
+        proof,
+        publicSignals,
+        ciphertext: input.ciphertext,
+        committmentPoolId: props.id,
+      });
+      await refreshData();
       toast({
         title: "Successfully signed and generated proof.",
         status: "success",
@@ -153,6 +175,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         isClosable: true,
       });
       localStorage.setItem(`signed-pool-${props.id}`, "true");
+      setIsLoading(false);
     } catch (ex: unknown) {
       console.error("Error signing attestation: ", ex);
       toast({
@@ -161,6 +184,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         duration: 1500,
         isClosable: true,
       });
+      setIsLoading(false);
     }
   };
 
@@ -201,8 +225,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             {new Date(Date.parse(props.created_at)).toLocaleTimeString()}{" "}
           </Text>
           <Text>
-            {props.signatures?.length || 0}/{props.threshold} signatures before
-            reveal
+            {/* @ts-ignore */}
+            {props.signatures || 0}/{props.threshold} signatures before reveal
           </Text>
           {!session && <Text color="gray.600">Please sign in to attest</Text>}
           {!isOperator && !alreadySigned && (
@@ -210,6 +234,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
               Sign attestation
             </Button>
           )}
+          {isLoading && <Spinner />}
           <VStack background="gray.50" padding={4} borderRadius={8}>
             <Text color="gray.600">
               {`Are you the operator? Sorry, we didn't recognize you but if you have your key pair handy we can sign you back in as an operator.`}

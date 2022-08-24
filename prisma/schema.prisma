@@ -35,7 +35,7 @@ model Signature {
   // for zkSNARK
   proof Json
   publicSignals Json
-  ciphertext        String
+  ciphertext        String[]
   commitment_pool   CommitmentPool @relation(fields: [commitment_poolId], references: [id])
   commitment_poolId Int
 }

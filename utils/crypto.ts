@@ -239,8 +239,11 @@ export async function testCircuit() {
   const plaintext: any[] = [BigInt(1)];
 
   const ciphertext = await encrypt(plaintext, sharedSecret);
-  // const decryptedCiphertext = await decrypt(ciphertext, sharedSecret);
-  // console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
+  const decryptedCiphertext = await decrypt(
+    ciphertext,
+    Keypair.genEcdhSharedKey(operator.privKey, signer.pubKey)
+  );
+  console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
 
   const res = await prepareInputs(
     operator.pubKey.rawPubKey,
