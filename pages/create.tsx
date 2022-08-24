@@ -26,6 +26,7 @@ import { useClipboard } from "@chakra-ui/react";
 import { CheckIcon, CopyIcon } from "@chakra-ui/icons";
 import { useSession } from "next-auth/react";
 import sha256 from "crypto-js/sha256";
+import { addOperatorDataToCache, addSignerDataToCommitmentPoolInCache } from "@utils/dexie";
 
 const CreatePool: NextPage = ({ }) => {
   const [keyPair, setKeyPair] = useState<SerializedKeyPair | undefined>(
@@ -87,18 +88,8 @@ const CreatePool: NextPage = ({ }) => {
       });
       if (result.status === 200 && session?.user) {
         var resultBody = await result.json();
-        // TODO: use dexie + fix security
-        localStorage.setItem(
-          `commitment-pool-operator-priv-${resultBody.id}-${sha256(
-            // @ts-ignore TODO:
-            session.user.id ?? ""
-          )}`,
-          privateKey
-        );
-        localStorage.setItem(
-          `commitment-pool-operator-pub-${resultBody.id}`,
-          publicKey
-        );
+        // @ts-ignore TODO:
+        addOperatorDataToCache(resultBody.id, publicKey, resultBody.operatorId, sha256(session?.user.id ?? "").toString(), privateKey);
         setSubmitted(true);
         setLoading(false);
       } else {

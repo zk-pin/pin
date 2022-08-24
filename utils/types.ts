@@ -40,25 +40,39 @@ export type VKeyRespData = {
 import Dexie from "dexie";
 export class DexieDatabase extends Dexie {
   commitmentPools!: Dexie.Table<ICommitmentPools, number>;
+  signers!: Dexie.Table<ISigner, number>;
 
   constructor() {
     super("zkPIN");
 
     this.version(1).stores({
       commitmentPools: "&commitmentPoolId",
+      signers: "&hashedUserId",
     });
   }
 }
 
 // By defining the interface of table records,
 // you get better type safety and code completion
+
+// store commitment pool data client side
 export type ICommitmentPools = {
   commitmentPoolId: string; // primary key
   operatorId: string | number;
   operatorPublicKey: string;
-  signers: ISigner[];
+  hashedOperatorUserId: string; // store operator user id on client side for convenience
+  signers: IPoolSigner[];
+  operatorPrivateKey?: string;
 };
 
-export type ISigner = {
+// store pool signer data on client side
+export type IPoolSigner = {
   publicKey: string;
+};
+
+// store user and key pair data on client side
+export type ISigner = {
+  hashedUserId: string;
+  publicKey: string;
+  privateKey: string;
 };

@@ -17,6 +17,9 @@ import { useEffect } from "react";
 import { updateUserPublicKey } from "../utils/api";
 import { Keypair } from "maci-domainobjs";
 import { serializePubKey } from "@utils/crypto";
+import { useLiveQuery } from "dexie-react-hooks";
+import { addSignerDataToCache, getCachedSignerData } from "@utils/dexie";
+import sha256 from "crypto-js/sha256";
 
 type Props = {
   pools: CommitmentPoolProps[];
@@ -24,11 +27,13 @@ type Props = {
 
 const Home: NextPage<Props> = ({ pools }) => {
   const { data: session } = useSession();
-  // useEffect(() => {
-  //     // testBroken();
-  //     // testCircuit();
-  //     // genPair();
-  // }, []);
+  const cachedSigner = useLiveQuery(
+    async () => {
+      if (!session) { return; }
+      // @ts-ignore TODO:
+      const signerData = await getCachedSignerData(sha256(session.user.id).toString());
+      return signerData;
+    }, [session]);
 
   //TODO: double hacky this is duplicated in [id]
   useEffect(() => {
@@ -38,20 +43,16 @@ const Home: NextPage<Props> = ({ pools }) => {
     //TODO: hacky fix to use globalComittmentPool
     //TODO: make more secure or encrypt or ask to store offline
     if (
-      session?.user &&
-      // @ts-ignore TODO:
-      !localStorage.getItem(`signer-priv-key-${session.user.id}`)
+      session?.user && !cachedSigner?.privateKey
     ) {
       const newPair = new Keypair();
-      localStorage.setItem(
-        // @ts-ignore TODO:
-        `signer-priv-key-${session.user.id}`,
-        newPair.privKey.rawPrivKey.toString()
-      );
+      // @ts-ignore TODO:
+      addSignerDataToCache(sha256(session.user.id).toString(), serializePubKey(newPair), newPair.privKey.rawPrivKey.toString());
+
       // @ts-ignore TODO:
       updateUserPublicKey(session.user.id, serializePubKey(newPair));
     }
-  }, [session]);
+  }, [cachedSigner?.privateKey, session]);
 
   return (
     <Box className={styles.container}>

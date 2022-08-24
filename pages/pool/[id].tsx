@@ -20,53 +20,13 @@ import {
   getPublicKeyFromPrivate,
   serializePubKey,
 } from "@utils/crypto";
-import sha256 from "crypto-js/sha256";
-import { Keypair, PrivKey } from "maci-domainobjs";
-import { generateProof } from "../../utils/zkp";
-import { updateUserPublicKey } from "../../utils/api";
+import { Keypair } from "maci-domainobjs";
+import { generateProof } from "@utils/zkp";
+import { updateUserPublicKey } from "@utils/api";
 import { useLiveQuery } from "dexie-react-hooks";
-import { getOperatorData } from '@utils/dexie';
+import { addOperatorDataToCache, getCachedSignerData, getCachedCommitmentPoolData, addSignerDataToCommitmentPoolInCache, addSignerDataToCache } from '@utils/dexie';
+import sha256 from "crypto-js/sha256";
 
-export const getServerSideProps: GetServerSideProps = async ({
-  params,
-}): Promise<any> => {
-  const pool = await prisma.commitmentPool.findUnique({
-    where: {
-      id: Number(params?.id),
-    },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      created_at: true,
-      threshold: true,
-      operator: {
-        select: {
-          operator_key: true,
-        },
-      },
-    },
-  });
-
-  const sybilAddresses = {
-    serializedPublicKeys: (
-      await prisma.user.findMany({
-        select: {
-          seriailizedPublicKey: true,
-        },
-      })
-    ).map((el) => el.seriailizedPublicKey),
-  };
-
-  return {
-    props: {
-      ...JSON.parse(JSON.stringify(pool)),
-      ...JSON.parse(JSON.stringify(sybilAddresses)),
-    },
-  };
-};
-
-//TODO: type props
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const { data: session } = useSession();
 
@@ -78,72 +38,75 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const cachedCommitmentPoolData = useLiveQuery(
     async () => {
       if (!session) { return; }
-      const operatorData = await getOperatorData(props.id)
+      const operatorData = await getCachedCommitmentPoolData(props.id)
       return operatorData;
+    }, [session]);
+
+  const cachedSigner = useLiveQuery(
+    async () => {
+      if (!session) { return; }
+      // @ts-ignore TODO:
+      const signerData = await getCachedSignerData(sha256(session.user.id).toString());
+      return signerData;
     }, [session]);
 
   // figure out if current user is the operator
   useEffect(() => {
     if (!session || !session.user || !props.id) {
       setIsOperator(false);
+      return;
     }
-    const operatorPublicKey = localStorage.getItem(
-      `commitment-pool-operator-pub-${props.id}-${sha256(
-        //@ts-ignore TODO:
-        session?.user.id ?? ""
-      )}`
-    );
-    if (operatorPublicKey) {
+    const operatorUserId = cachedCommitmentPoolData?.hashedOperatorUserId;
+    if (!operatorUserId) { setIsOperator(false); return; }
+
+    // @ts-ignore TODO:
+    if (sha256(operatorUserId).toString() === session.user.id) {
       setIsOperator(true);
     }
   }, [setIsOperator, session, props.id, cachedCommitmentPoolData]);
 
   // figure out if this attestation has already been signed
   useEffect(() => {
-    if (localStorage.getItem(`signed-pool-${props.id}`) === "true") {
+    if (!cachedSigner || !cachedCommitmentPoolData) { return; }
+    if (cachedCommitmentPoolData.signers.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
       setAlreadySigned(true);
     } else {
       setAlreadySigned(false);
     }
-  }, [props.id, setAlreadySigned]);
+  }, [cachedCommitmentPoolData, cachedCommitmentPoolData?.signers, cachedSigner, props.id, setAlreadySigned]);
 
   useEffect(() => {
     //TODO: hacky fix to use globalComittmentPool
     //TODO: make more secure or encrypt or ask to store offline
     if (
-      session?.user &&
-      //@ts-ignore TODO:
-      !localStorage.getItem(`signer-priv-key-${session.user.id}`)
+      session?.user && !cachedSigner?.privateKey
     ) {
       const newPair = new Keypair();
-      localStorage.setItem(
-        //@ts-ignore TODO:
-        `signer-priv-key-${session.user.id}`,
-        newPair.privKey.rawPrivKey.toString()
-      );
+      //@ts-ignore TODO:
+      addSignerDataToCache(session.user.id, newPair.privKey.rawPrivKey.toString(), serializePubKey(newPair))
+
       //@ts-ignore TODO:
       updateUserPublicKey(session.user.id, serializePubKey(newPair));
     }
-  }, [session]);
+  }, [cachedSigner?.privateKey, session]);
 
   const signAttestation = async () => {
     try {
-      if (!session || !session.user) {
+      if (!session || !session.user || !cachedSigner) {
         return;
       }
 
       //get signer private key
-      const privKey = localStorage.getItem(
-        //@ts-ignore TODO:
-        `signer-priv-key-${session.user.id}`
-      );
+      const privKey = cachedSigner.privateKey;
+
+      cachedSigner
       if (!privKey) {
         return;
       }
       const serializedOpPubKey = props.operator.operator_key;
       const serializedPublicKeys: string[] = props.serializedPublicKeys;
 
-      console.log(serializedPublicKeys);
+      console.log(serializedPublicKeys); // TODO: remove
 
       const input: ProofInput = await generateCircuitInputs(
         serializedOpPubKey,
@@ -152,22 +115,24 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         Number(props.id)
       );
 
-      console.log(JSON.stringify(input));
+      console.log(JSON.stringify(input)); // TODO: remove
 
       const { proof, publicSignals } = (await generateProof(input)).data;
+
       toast({
         title: "Successfully signed and generated proof.",
         status: "success",
-        duration: 1500,
+        duration: 3000,
         isClosable: true,
       });
-      localStorage.setItem(`signed-pool-${props.id}`, "true");
-    } catch (ex: unknown) {
-      console.error("Error signing attestation: ", ex);
+      addSignerDataToCommitmentPoolInCache(props.id, cachedSigner.publicKey);
+    } catch (err: unknown) {
+      console.error("Error signing attestation: ", err); // TODO: remove
+
       toast({
         title: "Uh oh something went wrong",
         status: "error",
-        duration: 1500,
+        duration: 3000,
         isClosable: true,
       });
     }
@@ -178,12 +143,14 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     privateKey: Yup.string().length(66, "invalid length").required("Required"),
   });
 
+  // submit operator private key form
   const submitPrivateKeyForm = useFormik({
     initialValues: {
       privateKey: "",
     },
     validationSchema: submitPrivateKeySchema,
     onSubmit: async (values) => {
+      if (!session) { return; }
       const privKey = values.privateKey;
       const derivedPubKey = await getPublicKeyFromPrivate(privKey);
       const res = await fetch(`/api/operator/${props.operatorId}`, {
@@ -193,7 +160,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       const content = await res.json();
       if (content.operator_key === derivedPubKey) {
         setIsOperator(true);
-        // TODO: set in local
+        // @ts-ignore TODO:
+        addOperatorDataToCache(props.id, content.operator_key, content.id, session.user.id);
       }
     },
   });
@@ -258,5 +226,46 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     </Box>
   );
 };
+
+//TODO: type props
+export const getServerSideProps: GetServerSideProps = async ({
+  params,
+}): Promise<any> => {
+  const pool = await prisma.commitmentPool.findUnique({
+    where: {
+      id: Number(params?.id),
+    },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      created_at: true,
+      threshold: true,
+      operator: {
+        select: {
+          operator_key: true,
+        },
+      },
+    },
+  });
+
+  const sybilAddresses = {
+    serializedPublicKeys: (
+      await prisma.user.findMany({
+        select: {
+          seriailizedPublicKey: true,
+        },
+      })
+    ).map((el) => el.seriailizedPublicKey),
+  };
+
+  return {
+    props: {
+      ...JSON.parse(JSON.stringify(pool)),
+      ...JSON.parse(JSON.stringify(sybilAddresses)),
+    },
+  };
+};
+
 
 export default CommitmentPool;

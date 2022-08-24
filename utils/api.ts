@@ -1,8 +1,11 @@
-import axios from "axios";
-
 export async function updateUserPublicKey(id: string, publicKey: string) {
-  await axios.put("/api/setPubKey", {
+  const body = {
     id,
     publicKey,
+  };
+  fetch(`/api/setPubKey`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
 }
