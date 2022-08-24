@@ -39,13 +39,16 @@ const Home: NextPage<Props> = ({ pools }) => {
     //TODO: make more secure or encrypt or ask to store offline
     if (
       session?.user &&
+      // @ts-ignore TODO:
       !localStorage.getItem(`signer-priv-key-${session.user.id}`)
     ) {
       const newPair = new Keypair();
       localStorage.setItem(
+        // @ts-ignore TODO:
         `signer-priv-key-${session.user.id}`,
         newPair.privKey.rawPrivKey.toString()
       );
+      // @ts-ignore TODO:
       updateUserPublicKey(session.user.id, serializePubKey(newPair));
     }
   }, [session]);

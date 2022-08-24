@@ -90,6 +90,7 @@ const CreatePool: NextPage = ({ }) => {
         // TODO: use dexie + fix security
         localStorage.setItem(
           `commitment-pool-operator-priv-${resultBody.id}-${sha256(
+            // @ts-ignore TODO:
             session.user.id ?? ""
           )}`,
           privateKey

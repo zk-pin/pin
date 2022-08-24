@@ -46,7 +46,7 @@ export const getPublicKeyFromPrivate = async (privKey: string) => {
   return serializePubKey(new Keypair(new PrivKey(BigInt(privKey))));
 };
 
-//@ts-ignore
+// @ts-ignore TODO:
 let eddsa: any;
 
 interface Ciphertext {

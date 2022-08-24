@@ -3,10 +3,17 @@ export type CommitmentPoolProps = {
   title: string;
   created_at: string;
   operatorId: string | number;
+  operator: IOperator;
   description?: string;
   threshold: number;
   signatures: any[];
   revealed_keys: any[];
+  serializedPublicKeys: string[];
+};
+
+export type IOperator = {
+  id: string | number;
+  operator_key: string;
 };
 
 export type SerializedKeyPair = {
@@ -32,26 +39,26 @@ export type VKeyRespData = {
 /** for Dexie */
 import Dexie from "dexie";
 export class DexieDatabase extends Dexie {
-    commitmentPools!: Dexie.Table<ICommitmentPools, number>;
+  commitmentPools!: Dexie.Table<ICommitmentPools, number>;
 
-    constructor() {
-        super("zkPIN");
+  constructor() {
+    super("zkPIN");
 
-        this.version(1).stores({
-            commitmentPools: "&commitmentPoolId",
-        });
-    }
+    this.version(1).stores({
+      commitmentPools: "&commitmentPoolId",
+    });
+  }
 }
 
 // By defining the interface of table records,
 // you get better type safety and code completion
 export type ICommitmentPools = {
-    commitmentPoolId: string; // primary key
-    operatorId: string | number;
-    operatorPublicKey: string;
-    signers: ISigner[];
+  commitmentPoolId: string; // primary key
+  operatorId: string | number;
+  operatorPublicKey: string;
+  signers: ISigner[];
 };
 
 export type ISigner = {
-    publicKey: string;
+  publicKey: string;
 };

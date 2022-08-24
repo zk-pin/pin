@@ -19,12 +19,16 @@ export default NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, token, user }) {
+    async session({ session, user }) {
       // Send properties to the client, like an access_token from a provider.
-      // @ts-ignore
+      session.user = {
+        ...user,
+      };
+      // @ts-ignore TODO:
       session.user.id = user.id;
       return session;
     },
+
     async jwt({
       token,
       account,
@@ -38,13 +42,6 @@ export default NextAuth({
       if (account?.provider && !token[account.provider]) {
         token[account.provider] = {};
       }
-
-      // if ( account?.accessToken ) {
-      //   token[account.provider].accessToken = account.accessToken;
-      // }
-      // if ( account?.refreshToken ) {
-      //   token[account.provider].refreshToken = account.refreshToken;
-      // }
       return token;
     },
   },

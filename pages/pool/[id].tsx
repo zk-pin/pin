@@ -89,6 +89,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     }
     const operatorPublicKey = localStorage.getItem(
       `commitment-pool-operator-pub-${props.id}-${sha256(
+        //@ts-ignore TODO:
         session?.user.id ?? ""
       )}`
     );
@@ -111,16 +112,16 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     //TODO: make more secure or encrypt or ask to store offline
     if (
       session?.user &&
-      //@ts-ignore
+      //@ts-ignore TODO:
       !localStorage.getItem(`signer-priv-key-${session.user.id}`)
     ) {
       const newPair = new Keypair();
       localStorage.setItem(
-        //@ts-ignore
+        //@ts-ignore TODO:
         `signer-priv-key-${session.user.id}`,
         newPair.privKey.rawPrivKey.toString()
       );
-      //@ts-ignore
+      //@ts-ignore TODO:
       updateUserPublicKey(session.user.id, serializePubKey(newPair));
     }
   }, [session]);
@@ -133,14 +134,13 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
       //get signer private key
       const privKey = localStorage.getItem(
+        //@ts-ignore TODO:
         `signer-priv-key-${session.user.id}`
       );
       if (!privKey) {
         return;
       }
-      //@ts-ignore
       const serializedOpPubKey = props.operator.operator_key;
-      //@ts-ignore
       const serializedPublicKeys: string[] = props.serializedPublicKeys;
 
       console.log(serializedPublicKeys);
