@@ -268,6 +268,7 @@ export const getServerSideProps: GetServerSideProps = async ({
     serializedPublicKeys: (
       await prisma.user.findMany({
         select: {
+          // @ts-ignore TODO:
           seriailizedPublicKey: true,
         },
       })
