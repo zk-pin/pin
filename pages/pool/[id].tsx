@@ -272,6 +272,7 @@ export const getServerSideProps: GetServerSideProps = async ({
           seriailizedPublicKey: true,
         },
       })
+      // @ts-ignore TODO:
     ).map((el) => el.seriailizedPublicKey),
   };
 
