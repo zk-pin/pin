@@ -9,7 +9,6 @@ import { createMerkleTree, formatPubKey } from "./zkp";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 import { encrypt, decrypt } from "maci-crypto";
 import { ISignature, ProofInput, SerializedKeyPair } from "./types";
-import { User } from "@prisma/client";
 
 export const DELIMETER = "%--%";
 
@@ -201,18 +200,36 @@ export const generateCircuitInputs = async (
   };
 };
 
-// console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
-
-// cipher text array
-// users
-// array of length 2 strings, 0: IV, config hash, 1: actual message
-//  Keypair.genEcdhSharedKey( to generate shared key, Operator priv Key and the signer public key that I have to figure out
-// cast to big ints
+// decrypts cipher texts with public key set
 export const decryptCipherTexts = (
-  operatorPrivKey: string,
+  operatorPrivateKeyString: string,
   serializedPublicKeys: string[],
   signatures: ISignature[]
-) => {};
+) => {
+  const operatorPrivateKey = new PrivKey(BigInt(operatorPrivateKeyString));
+
+  const decryptedCipherTexts: string[] = [];
+  const serializedPublicKeySet = new Set(serializedPublicKeys);
+
+  signatures.forEach((signature, idx) => {
+    const cipherText = {
+      iv: BigInt(signature.ciphertext[0]),
+      data: signature.ciphertext.slice(1).map((cp) => BigInt(cp)),
+    };
+
+    serializedPublicKeySet.forEach((serializedPubKey) => {
+      const tempPubKey = new PubKey(deserializePubKey(serializedPubKey));
+      const sharedSecret = Keypair.genEcdhSharedKey(
+        operatorPrivateKey,
+        tempPubKey
+      );
+
+      const decryptAttempt = decrypt(cipherText, sharedSecret);
+      // check attempt and remove pub key from set
+    });
+  });
+  return decryptedCipherTexts;
+};
 
 const prepareInputs = async (
   opPubkey: BigInt[],

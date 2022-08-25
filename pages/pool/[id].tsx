@@ -218,17 +218,17 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
           ) :
             (<Button disabled>Already signed!</Button>)}
           {(isOperator && props.signatures.length < props.threshold) &&
-            <Box background="green.50" padding={4} borderRadius={8}>
+            <Box background="orange.50" padding={4} borderRadius={8}>
               <Text>Welcome back! You need to wait until the threshold has been reached to reveal. Come back later.
               </Text>
             </Box>}
           {(isOperator && props.signatures.length >= props.threshold) &&
-            <Box background="green.50" padding={4} borderRadius={8}>
-              <Text>Welcome back! You need to wait until the threshold has been reached to reveal. Come back later.</Text>
+            <VStack background="green.50" padding={4} borderRadius={8}>
+              <Text>Hi {session?.user?.name}, This commitment pool is ready for reveal.</Text>
               <Button onClick={startReveal}>Reveal</Button>
-            </Box>}
+            </VStack>}
           {isLoading && <Spinner />}
-          <VStack background="gray.50" padding={4} borderRadius={8}>
+          {!isOperator && <VStack background="gray.50" padding={4} borderRadius={8}>
             <Text color="gray.600">
               {`Are you the operator? Sorry, we didn't recognize you but if you have your key pair handy we can sign you back in as an operator.`}
             </Text>
@@ -262,6 +262,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
               </VStack>
             </form>
           </VStack>
+          }
         </VStack>
       </Box>
     </Box>
@@ -315,7 +316,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       props: {
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
-        signatures: signatures.map(() => ''),
+        signatures: JSON.parse(JSON.stringify(signatures)),
       },
     };
   } else {
@@ -323,7 +324,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       props: {
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
-        signatures: JSON.parse(JSON.stringify(signatures)),
+        signatures: signatures.map(() => ''),
       },
     };
   }
