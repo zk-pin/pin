@@ -28,7 +28,6 @@ import {
   ReadyForReveal,
   WaitForThreshold,
 } from "@components/OperatorComponents";
-import axios from "axios";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const { data: session } = useSession();

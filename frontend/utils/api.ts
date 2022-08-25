@@ -152,11 +152,8 @@ export const addRevealedSigner = async (
   userId: string
 ) => {
   const body = {
-    newRevealedSigners: [
-      ...revealedPublicKeys.map((el) => el.id),
-      // @ts-ignore TODO:
-      userId,
-    ],
+    // appending all userIds
+    newRevealedSigners: [...revealedPublicKeys.map((el) => el.id), userId],
     commitmentPoolId: commitmentPoolId,
   };
   return await fetch(`/api/addRevealedSigner`, {

@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next/types";
 import { VKeyRespData } from "../../utils/types";
 import prisma from "@utils/prisma";
 
-//PUT /api/setPubKey
+//PUT /api/addRevealedSigner
 export default async function addRevealedSigner(
   req: NextApiRequest,
   res: NextApiResponse<VKeyRespData | any>
