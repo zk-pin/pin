@@ -209,11 +209,11 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       const content = await res.json();
       if (content.operator_key === derivedPubKey) {
         setIsOperator(true);
-        // @ts-ignore TODO:
         addOperatorDataToCache(
           props.id,
           content.operator_key,
           content.id,
+          // @ts-ignore TODO:
           session.user.id,
           privKey
         );
