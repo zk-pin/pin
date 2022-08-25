@@ -183,7 +183,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
   const startReveal = () => {
     if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) { return; }
-    decryptCipherTexts(cachedCommitmentPoolData?.operatorPrivateKey, props.serializedPublicKeys, props.signatures)
+    decryptCipherTexts(cachedCommitmentPoolData?.operatorPrivateKey, props.serializedPublicKeys, props.signatures, parseInt(props.id))
   }
 
   return (
