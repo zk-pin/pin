@@ -447,19 +447,15 @@
       "runs": 200
     },
     "remappings": [
-      ":ds-test/=lib/forge-std/lib/ds-test/src/",
-      ":forge-std/=lib/forge-std/src/"
+      ":@openzeppelin/=/lib/openzeppelin-contracts/",
+      ":@solmate/=lib/solmate/",
+      ":ds-test/=lib/solmate/lib/ds-test/src/",
+      ":forge-std/=lib/forge-std/src/",
+      ":openzeppelin-contracts/=lib/openzeppelin-contracts/",
+      ":solmate/=lib/solmate/src/"
     ]
   },
   "sources": {
-    "lib/forge-std/lib/ds-test/src/test.sol": {
-      "keccak256": "0xb39cd1d5220cb474947b131e15a4538334b7e886af244b440ae5c9c6bba96a54",
-      "license": "GPL-3.0-or-later",
-      "urls": [
-        "bzz-raw://3101520221449ac0070bda3881311a71d9aa87e5210765e875246922cb5cb5f5",
-        "dweb:/ipfs/Qmbg6kAHNoG7ox9N9Xqd9Ere2H2XixMFWFqvyPwFCzB3Gr"
-      ]
-    },
     "lib/forge-std/src/Script.sol": {
       "keccak256": "0x4424dbcb8f5b741475445726f87408fcd89951fad973bec2ca442ee157f910e7",
       "license": "MIT",
@@ -500,12 +496,28 @@
         "dweb:/ipfs/QmdJBABsuXkvWxVzEyGXsTE3vyfBPXDdw5xvvtUz3JeoYW"
       ]
     },
+    "lib/solmate/lib/ds-test/src/test.sol": {
+      "keccak256": "0xb39cd1d5220cb474947b131e15a4538334b7e886af244b440ae5c9c6bba96a54",
+      "license": "GPL-3.0-or-later",
+      "urls": [
+        "bzz-raw://3101520221449ac0070bda3881311a71d9aa87e5210765e875246922cb5cb5f5",
+        "dweb:/ipfs/Qmbg6kAHNoG7ox9N9Xqd9Ere2H2XixMFWFqvyPwFCzB3Gr"
+      ]
+    },
+    "lib/solmate/src/utils/ReentrancyGuard.sol": {
+      "keccak256": "0xb282dd78aa7375d6b200b9a5d8dd214b2e5df1004f8217a4b4c2b07f0c5bfd01",
+      "license": "AGPL-3.0-only",
+      "urls": [
+        "bzz-raw://5fca62eb8d3dbd2b3b7e4bb051f6da16f4d0ff9cee61c39cebb80f031f6a8800",
+        "dweb:/ipfs/QmbrsXPK91iBFwHKwJs2HLRud2KzMoBDRiWYMUtyV5H57j"
+      ]
+    },
     "src/CommitReveal.sol": {
-      "keccak256": "0x8bf2231df53fc55ea8ef2ec32a18bba76e37e4eaf24b4339366923395d8520bf",
+      "keccak256": "0xa69c14355a2e7c7d2ceca0783db5f1f64e1ee63a4d1756bc7f412aefcd8ee796",
       "license": "UNLICENSED",
       "urls": [
-        "bzz-raw://eaa141c645f9c3d551312909dd745485267d443566deadc25ef00d9db3bdbcf5",
-        "dweb:/ipfs/QmesPit1MjWeXHF9WuRRTzrdQy8hDEwQVBTDhkwFsYWsbp"
+        "bzz-raw://74a8abfd7d4be470f1e72b9bce2f439dbfdd42723b321f8cc191c5168c35ba44",
+        "dweb:/ipfs/QmQGUeEsTkk9WA7BXUwJkhXwhfVzz8H8i5BS72uPYwurxd"
       ]
     },
     "test/CommitReveal.t.sol": {

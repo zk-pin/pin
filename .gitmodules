@@ -1,0 +1,6 @@
+[submodule "commit_reveal/lib/solmate"]
+	path = commit_reveal/lib/solmate
+	url = https://github.com/transmissions11/solmate
+[submodule "commit_reveal/lib/openzeppelin-contracts"]
+	path = commit_reveal/lib/openzeppelin-contracts
+	url = https://github.com/openzeppelin/openzeppelin-contracts

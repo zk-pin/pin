@@ -313,7 +313,7 @@
   },
   "settings": {
     "compilationTarget": {
-      "lib/forge-std/lib/ds-test/src/test.sol": "DSTest"
+      "lib/solmate/lib/ds-test/src/test.sol": "DSTest"
     },
     "evmVersion": "london",
     "libraries": {},
@@ -325,12 +325,16 @@
       "runs": 200
     },
     "remappings": [
-      ":ds-test/=lib/forge-std/lib/ds-test/src/",
-      ":forge-std/=lib/forge-std/src/"
+      ":@openzeppelin/=/lib/openzeppelin-contracts/",
+      ":@solmate/=lib/solmate/",
+      ":ds-test/=lib/solmate/lib/ds-test/src/",
+      ":forge-std/=lib/forge-std/src/",
+      ":openzeppelin-contracts/=lib/openzeppelin-contracts/",
+      ":solmate/=lib/solmate/src/"
     ]
   },
   "sources": {
-    "lib/forge-std/lib/ds-test/src/test.sol": {
+    "lib/solmate/lib/ds-test/src/test.sol": {
       "keccak256": "0xb39cd1d5220cb474947b131e15a4538334b7e886af244b440ae5c9c6bba96a54",
       "license": "GPL-3.0-or-later",
       "urls": [
