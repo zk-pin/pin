@@ -15,7 +15,7 @@ const PoolListItem = ({ pool }: Props) => {
             <Text>{pool.title}</Text>
           </HStack>
           <Spacer />
-          {!(pool.signatures?.length > pool.threshold) ?
+          {!(pool.signatures?.length >= pool.threshold) ?
             <Box>{pool.signatures?.length || 0}/{pool.threshold}</Box> :
             <Box>Revealed</Box>
           }
