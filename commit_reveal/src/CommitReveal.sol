@@ -8,9 +8,10 @@ contract CommitReveal {
 
   struct PoolData {
     string operatorPublicKey;
+    string cipherTextCid; // points to IPFS cipher text proof
+    // hashed off-chain with SHA256
     bytes32 operatorPrivateKeyHash;
     bytes32 cipherTextHash; // hash of cipher text array
-    string cipherTextCid; // points to IPFS cipher text proof
   }
 
   mapping(uint256 => PoolData) public poolData; // map of commitmentPoolId -> PoolData
@@ -77,7 +78,7 @@ contract CommitReveal {
       poolData[poolId].operatorPrivateKeyHash == sha256(abi.encode(privateKey)),
       "private key hash does not match"
     );
-    payable(msg.sender).transfer(1 ether);
+    payable(msg.sender).transfer(STAKE_PRICE ether);
   }
 
   // withdraws stake upon reveal of cipher text
@@ -89,6 +90,6 @@ contract CommitReveal {
       poolData[poolId].cipherTextHash == sha256(abi.encode(cipherText)),
       "cipher text hash does not match"
     );
-    payable(msg.sender).transfer(1 ether);
+    payable(msg.sender).transfer(STAKE_PRICE ether);
   }
 }
