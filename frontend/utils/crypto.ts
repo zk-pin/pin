@@ -207,8 +207,16 @@ export const decryptCipherTexts = (
   signatures: ISignature[],
   commitmentPoolId: number
 ) => {
+  console.log("start decryption");
+  const newPair = new Keypair(
+    new PrivKey(
+      BigInt(
+        "16347038065085415515844966536025757295866187560037242692458081396051801605521"
+      )
+    )
+  );
+  console.log("newPair rawPubKey", newPair.pubKey.rawPubKey);
   const operatorPrivateKey = new PrivKey(BigInt(operatorPrivateKeyString));
-
   const decryptedCipherTexts: string[] = [];
   const serializedPublicKeySet = new Set(serializedPublicKeys);
 
@@ -226,6 +234,7 @@ export const decryptCipherTexts = (
       );
 
       const decryptAttempt = decrypt(cipherText, sharedSecret);
+      console.log("decryptAttempt", decryptAttempt);
       if (Number(decryptAttempt[0]) === commitmentPoolId) {
         //TODO
         console.log("decryptAttempt", decryptAttempt);

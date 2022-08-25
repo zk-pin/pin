@@ -72,13 +72,12 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       return;
     }
     const operatorUserId = cachedCommitmentPoolData?.operatorUserId;
+    console.log('operatorId and priv key', cachedCommitmentPoolData?.operatorId, cachedCommitmentPoolData?.operatorPrivateKey)
+    // @ts-ignore TODO:
     if (!operatorUserId) {
       setIsOperator(false);
-      return;
-    }
-
-    // @ts-ignore TODO:
-    if (session.user.id === operatorUserId) {
+      // @ts-ignore TODO:
+    } else if (session.user.id === operatorUserId) {
       setIsOperator(true);
     }
   }, [setIsOperator, session, props.id, cachedCommitmentPoolData]);
@@ -116,7 +115,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   };
 
   const signAttestation = async () => {
-    console.log('signAttestation', session, cachedSigner)
+    console.log('signAttestation', session, cachedSigner);
     try {
       setIsLoading(true);
       console.log("session: ", session, " cached: ", cachedSigner);
@@ -130,7 +129,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         setIsLoading(false);
         return;
       }
-
       //get signer private key
       const privKey = cachedSigner.privateKey;
       const serializedOpPubKey = props.operator.operator_key;
@@ -224,6 +222,9 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   });
 
   const startReveal = () => {
+    console.log('start Reveal', !isOperator || !cachedCommitmentPoolData?.operatorPrivateKey,
+      isOperator,
+      cachedCommitmentPoolData?.operatorPrivateKey)
     if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) {
       return;
     }

@@ -35,8 +35,9 @@ export async function setSignature(
   });
 }
 
+// TODO: pass in a loading
 export const checkCachedSignerData = (
-  cachedSigner: { publicKey: string; privateKey: any } | undefined,
+  cachedSigner: { publicKey: string; privateKey: any } | undefined, // TODO: fix type
   session: any,
   toast: any
 ) => {
@@ -55,7 +56,7 @@ export const checkCachedSignerData = (
         toast({
           title:
             "Great! Issued a new private key. Please save this: " + privKey,
-          status: "error",
+          status: "success",
           duration: 100000,
           isClosable: true,
         });
@@ -92,6 +93,7 @@ export const checkCachedSignerData = (
         }
       }
     );
+    // TODO: this case should not be needed
   } else if (session?.user && !cachedSigner?.publicKey) {
     const newPair = new Keypair();
     const pubKey = serializePubKey(newPair);

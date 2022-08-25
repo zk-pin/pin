@@ -46,10 +46,13 @@ export default async function setSignature(
       },
     });
 
+    console.log("made it to signatures");
+
     const containsCipherText = signatures.filter(
       (signature) =>
         JSON.stringify(signature.ciphertext) === JSON.stringify(ciphertext)
     );
+    console.log("made it to containsCipherText");
 
     if (containsCipherText.length === 0) {
       await prisma.signature.create({
@@ -67,6 +70,7 @@ export default async function setSignature(
           },
         },
       });
+      console.log("made it to containsCipherText.length");
       res.status(200).json({ success: true });
     } else {
       res.status(400).json({ success: false, msg: "already signed this pool" });
