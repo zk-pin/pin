@@ -12,14 +12,13 @@ import {
   Image as ChakraImage,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import { PoolListItem } from "@components/PoolListItem";
 import { useEffect } from "react";
 import { updateUserPublicKey } from "../utils/api";
 import { Keypair } from "maci-domainobjs";
 import { serializePubKey } from "@utils/crypto";
 import { useLiveQuery } from "dexie-react-hooks";
 import { addSignerDataToCache, getCachedSignerData } from "@utils/dexie";
-import sha256 from "crypto-js/sha256";
+import { PoolListItem } from "@components/PoolListItem";
 
 type Props = {
   pools: CommitmentPoolProps[];
