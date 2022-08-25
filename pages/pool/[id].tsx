@@ -9,7 +9,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import prisma from "@utils/prisma";
-import { CommitmentPoolProps, ProofInput } from "@utils/types";
+import { CommitmentPoolProps, ISignature, ProofInput } from "@utils/types";
 import { GetServerSideProps, NextPage } from "next";
 import styles from "@styles/Home.module.css";
 import { useEffect, useState } from "react";
@@ -17,6 +17,7 @@ import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import {
+  decryptCipherTexts,
   generateCircuitInputs,
   getPublicKeyFromPrivate,
   serializePubKey,
@@ -72,7 +73,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   // figure out if this attestation has already been signed
   useEffect(() => {
     if (!cachedSigner || !cachedCommitmentPoolData) { return; }
-    if (cachedCommitmentPoolData.signers.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
+    if (cachedCommitmentPoolData.signers.length !== 0 &&
+      cachedCommitmentPoolData.signers.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
       setAlreadySigned(true);
     } else {
       setAlreadySigned(false);
@@ -174,6 +176,11 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     },
   });
 
+  const startReveal = () => {
+    if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) { return; }
+    decryptCipherTexts(cachedCommitmentPoolData?.operatorPrivateKey, props.serializedPublicKeys, props.signatures)
+  }
+
   return (
     <Box className={styles.container}>
       <Box className={styles.main}>
@@ -194,10 +201,15 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
               Sign attestation
             </Button>
           )}
-          {isOperator &&
+          {(isOperator && props.signatures.length < props.threshold) &&
             <Box background="green.50" padding={4} borderRadius={8}>
               <Text>Welcome back! You need to wait until the threshold has been reached to reveal. Come back later.
               </Text>
+            </Box>}
+          {(isOperator && props.signatures.length >= props.threshold) &&
+            <Box background="green.50" padding={4} borderRadius={8}>
+              <Text>Welcome back! You need to wait until the threshold has been reached to reveal. Come back later.</Text>
+              <Button onClick={startReveal}>Reveal</Button>
             </Box>}
           {isLoading && <Spinner />}
           <VStack background="gray.50" padding={4} borderRadius={8}>
@@ -246,7 +258,7 @@ export const getServerSideProps: GetServerSideProps = async ({
 }): Promise<any> => {
   const pool = await prisma.commitmentPool.findUnique({
     where: {
-      id: Number(params?.id),
+      id: Number(params?.id) || -1,
     },
     select: {
       id: true,

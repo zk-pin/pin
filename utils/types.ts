@@ -36,6 +36,11 @@ export type VKeyRespData = {
   vkey: string;
 };
 
+export type ISignature = {
+  ciphertext: string;
+  commitment_poolId: string | number;
+};
+
 /** for Dexie */
 import Dexie from "dexie";
 export class DexieDatabase extends Dexie {
