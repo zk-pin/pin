@@ -47,10 +47,11 @@ export default async function setSignature(
     });
 
     const containsCipherText = signatures.filter(
-      (signature) => signature.ciphertext === ciphertext
+      (signature) =>
+        JSON.stringify(signature.ciphertext) === JSON.stringify(ciphertext)
     );
 
-    if (!containsCipherText) {
+    if (containsCipherText.length === 0) {
       await prisma.signature.create({
         data: {
           proof,
@@ -63,7 +64,7 @@ export default async function setSignature(
       });
       res.status(200).json({ success: true });
     } else {
-      res.status(200).json({ success: false, msg: "already signed this pool" });
+      res.status(400).json({ success: false, msg: "already signed this pool" });
     }
   } catch (err: unknown) {
     console.error(err);

@@ -83,16 +83,9 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   // figure out if this attestation has already been signed
   // only works for local signers (if you signed from the same device)
   useEffect(() => {
-    if (!cachedSigner || !cachedCommitmentPoolData) {
-      return;
-    }
-    if (
-      cachedCommitmentPoolData.localSigners &&
-      cachedCommitmentPoolData.localSigners.length !== 0 &&
-      cachedCommitmentPoolData.localSigners.filter(
-        (signer) => signer.publicKey === cachedSigner.publicKey
-      )
-    ) {
+    if (!cachedSigner || !cachedCommitmentPoolData) { return; }
+    if (cachedCommitmentPoolData.localSigners && cachedCommitmentPoolData.localSigners.length !== 0 &&
+      cachedCommitmentPoolData.localSigners.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
       setAlreadySigned(true);
     } else {
       setAlreadySigned(false);
@@ -110,15 +103,18 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     //TODO: make more secure or encrypt or ask to store offline
     if (session?.user && !cachedSigner?.privateKey) {
       const newPair = new Keypair();
+      const pubKey = serializePubKey(newPair);
+      const privKey = newPair.privKey.rawPrivKey.toString();
       //@ts-ignore TODO:
-      addSignerDataToCache(
-        session.user.id,
-        serializePubKey(newPair),
-        newPair.privKey.rawPrivKey.toString()
-      );
-
-      //@ts-ignore TODO:
-      updateUserPublicKey(session.user.id, serializePubKey(newPair));
+      updateUserPublicKey(session.user.id, pubKey).then((res) => {
+        if (res.status === 200) {
+          //@ts-ignore TODO:
+          addSignerDataToCache(session.user.id, pubKey, privKey);
+        } else if (res.status === 409) {
+          //@ts-ignore TODO:
+          addSignerDataToCache(session.user.id, res.publicKey, '');
+        }
+      });
     }
   }, [cachedSigner, cachedSigner?.privateKey, session]);
 
@@ -158,21 +154,24 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       );
 
       const { proof, publicSignals } = await generateProof(circuitInput);
-
-      await setSignature(
-        proof,
-        publicSignals,
-        circuitInput.ciphertext,
-        props.id
-      );
-      await refreshData();
-      toast({
-        title: "Successfully signed and generated proof.",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-      addSignerDataToCommitmentPoolInCache(props.id, cachedSigner.publicKey);
+      const res = await setSignature(proof, publicSignals, circuitInput.ciphertext, props.id);
+      if (res.status === 200) {
+        await refreshData();
+        toast({
+          title: "Successfully signed and generated proof.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+        addSignerDataToCommitmentPoolInCache(props.id, cachedSigner.publicKey);
+      } else {
+        toast({
+          title: "Looks like you've already signed before",
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
       setIsLoading(false);
     } catch (err: unknown) {
       console.error(err);
@@ -252,20 +251,20 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             <Button disabled={!session} onClick={signAttestation}>
               Sign attestation
             </Button>
-          ) : (
-            <Button disabled>Already signed!</Button>
-          )}
-          {isOperator && props.signatures.length >= props.threshold && (
-            <Box background="green.50" padding={4} borderRadius={8}>
-              <Text>
-                Welcome back! You need to wait until the threshold has been
-                reached to reveal. Come back later.
+          ) :
+            (<Button disabled>Already signed!</Button>)}
+          {(isOperator && props.signatures.length < props.threshold) &&
+            <Box background="orange.50" padding={4} borderRadius={8}>
+              <Text>Welcome back! You need to wait until the threshold has been reached to reveal. Come back later.
               </Text>
+            </Box>}
+          {(isOperator && props.signatures.length >= props.threshold) &&
+            <VStack background="green.50" padding={4} borderRadius={8}>
+              <Text>Hi {session?.user?.name}, This commitment pool is ready for reveal.</Text>
               <Button onClick={startReveal}>Reveal</Button>
-            </Box>
-          )}
+            </VStack>}
           {isLoading && <Spinner />}
-          <VStack background="gray.50" padding={4} borderRadius={8}>
+          {!isOperator && <VStack background="gray.50" padding={4} borderRadius={8}>
             <Text color="gray.600">
               {`Are you the operator? Sorry, we didn't recognize you but if you have your key pair handy we can sign you back in as an operator.`}
             </Text>
@@ -299,6 +298,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
               </VStack>
             </form>
           </VStack>
+          }
         </VStack>
       </Box>
     </Box>
@@ -352,7 +352,11 @@ export const getServerSideProps: GetServerSideProps = async ({
       props: {
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
+<<<<<<< HEAD:pages/pool/[id].tsx
         signatures: signatures.map(() => ""),
+=======
+        signatures: JSON.parse(JSON.stringify(signatures)),
+>>>>>>> 03c89c012508d3945866155b877acc65c9158c85:frontend/pages/pool/[id].tsx
       },
     };
   } else {
@@ -360,7 +364,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       props: {
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
-        signatures: JSON.parse(JSON.stringify(signatures)),
+        signatures: signatures.map(() => ''),
       },
     };
   }

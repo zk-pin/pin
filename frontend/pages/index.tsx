@@ -12,14 +12,13 @@ import {
   Image as ChakraImage,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import { PoolListItem } from "@components/PoolListItem";
 import { useEffect } from "react";
 import { updateUserPublicKey } from "../utils/api";
 import { Keypair } from "maci-domainobjs";
 import { serializePubKey, testCircuit } from "@utils/crypto";
 import { useLiveQuery } from "dexie-react-hooks";
 import { addSignerDataToCache, getCachedSignerData } from "@utils/dexie";
-import sha256 from "crypto-js/sha256";
+import { PoolListItem } from "@components/PoolListItem";
 
 type Props = {
   pools: CommitmentPoolProps[];
@@ -51,11 +50,16 @@ const Home: NextPage<Props> = ({ pools }) => {
       const newPair = new Keypair();
       const pubKey = serializePubKey(newPair);
       const privKey = newPair.privKey.rawPrivKey.toString();
-      // @ts-ignore TODO:
-      addSignerDataToCache(session.user.id, pubKey, privKey);
-
-      // @ts-ignore TODO:
-      updateUserPublicKey(session.user.id, pubKey);
+      //@ts-ignore TODO:
+      updateUserPublicKey(session.user.id, pubKey).then((res) => {
+        if (res.status === 200) {
+          //@ts-ignore TODO:
+          addSignerDataToCache(session.user.id, pubKey, privKey);
+        } else if (res.status === 409) {
+          //@ts-ignore TODO:
+          addSignerDataToCache(session.user.id, res.publicKey, '');
+        }
+      });
     }
   }, [cachedSigner?.privateKey, session]);
 

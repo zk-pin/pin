@@ -8,7 +8,7 @@ import assert from "assert";
 import { createMerkleTree, hashBigIntArr } from "./zkp";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 import { encrypt, decrypt } from "maci-crypto";
-import { ProofInput, SerializedKeyPair } from "./types";
+import { ISignature, ProofInput, SerializedKeyPair } from "./types";
 
 export const DELIMETER = "%--%";
 
@@ -31,7 +31,7 @@ export const generatePrivKey = () => {
 
 // required for front-end
 // DO NOT DELETE
-// Note generateNewKeyPair returns a seriailized representation of the BigInt keys
+// Note generateNewKeyPair returns a serializedPublicKey representation of the BigInt keys
 // privateKey: String(privKey)
 // publicKey: String(publicKey[0]) + "%--%" + String(publicKey[1])
 export const generateNewKeyPair = (): SerializedKeyPair => {
@@ -182,8 +182,7 @@ export const generateCircuitInputs = async (
   const plaintext: any[] = [BigInt(committmentPoolId)];
 
   const ciphertext = await encrypt(plaintext, sharedSecret);
-  // const decryptedCiphertext = await decrypt(cipherext, sharedSecret);
-  // console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
+  const decryptedCiphertext = await decrypt(ciphertext, sharedSecret);
 
   const merkle = createMerkleTree(signer.pubKey.rawPubKey, globalPubkeyPool);
   const res = await prepareInputs(
@@ -199,6 +198,41 @@ export const generateCircuitInputs = async (
     pathIndices: merkle.pathIndices.map((el) => el.toString()),
     ...res,
   };
+};
+
+// decrypts cipher texts with public key set
+export const decryptCipherTexts = (
+  operatorPrivateKeyString: string,
+  serializedPublicKeys: string[],
+  signatures: ISignature[]
+) => {
+  const operatorPrivateKey = new PrivKey(BigInt(operatorPrivateKeyString));
+
+  const decryptedCipherTexts: string[] = [];
+  const serializedPublicKeySet = new Set(serializedPublicKeys);
+
+  console.log("signatures: ", signatures);
+  signatures.forEach((signature, idx) => {
+    const cipherText = {
+      iv: BigInt(signature.ciphertext[0]),
+      data: signature.ciphertext.slice(1).map((cp) => BigInt(cp)),
+    };
+
+    console.log("ciphertext: ", cipherText);
+
+    serializedPublicKeySet.forEach((serializedPubKey) => {
+      const tempPubKey = new PubKey(deserializePubKey(serializedPubKey));
+      const sharedSecret = Keypair.genEcdhSharedKey(
+        operatorPrivateKey,
+        tempPubKey
+      );
+
+      const decryptAttempt = decrypt(cipherText, sharedSecret);
+      console.log(decryptAttempt);
+      // check attempt and remove pub key from set
+    });
+  });
+  return decryptedCipherTexts;
 };
 
 const prepareInputs = async (
@@ -274,6 +308,6 @@ export async function testCircuit() {
 export function JSONStringifyCustom(val: any) {
   return JSON.stringify(
     val,
-    (key, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
+    (_, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
   );
 }

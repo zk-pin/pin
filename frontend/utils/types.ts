@@ -37,7 +37,7 @@ export type VKeyRespData = {
 };
 
 export type ISignature = {
-  ciphertext: string;
+  ciphertext: string[];
   commitment_poolId: string | number;
 };
 
