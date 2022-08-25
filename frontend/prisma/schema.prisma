@@ -29,13 +29,13 @@ model Operator {
   commitment_pool CommitmentPool?
 }
 
-// model Ipfs {
-//   id Int @id @unique @default(autoincrement())
-//   ipfsHash String
-//   pinSize Int
-//   timestamp String
-//   signature Signature?
-// }
+model Ipfs {
+  id Int @id @unique @default(autoincrement())
+  ipfsHash String
+  pinSize Int
+  timestamp String
+  signature Signature?
+}
 
 model Signature {
   id                Int            @id @default(autoincrement())
@@ -43,8 +43,8 @@ model Signature {
   proof             Json
   publicSignals     Json
   ciphertext        String[]
-  // ipfs Ipfs @relation(fields: [ipfsId], references: [id])
-  // ipfsId Int
+  ipfs Ipfs @relation(fields: [ipfsId], references: [id])
+  ipfsId Int @unique
   commitment_pool   CommitmentPool @relation(fields: [commitment_poolId], references: [id])
   commitment_poolId Int
 }
