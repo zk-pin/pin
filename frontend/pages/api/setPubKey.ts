@@ -17,6 +17,7 @@ export default async function setPubKey(
         serializedPublicKey: true,
       },
     });
+    // only set a serializedPublicKey if the user hasn't already been assigned one
     if (user.serializedPublicKey === "") {
       await prisma.user.update({
         where: {
