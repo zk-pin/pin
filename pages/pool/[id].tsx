@@ -141,14 +141,15 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
           duration: 3000,
           isClosable: true,
         });
+        addSignerDataToCommitmentPoolInCache(props.id, cachedSigner.publicKey);
+      } else {
+        toast({
+          title: "Looks like you've already signed before",
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
       }
-      toast({
-        title: "Looks like you've already signed before",
-        status: "warning",
-        duration: 3000,
-        isClosable: true,
-      });
-      addSignerDataToCommitmentPoolInCache(props.id, cachedSigner.publicKey);
       setIsLoading(false);
     } catch (err: unknown) {
       console.error(err);
