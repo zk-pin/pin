@@ -1,0 +1,183 @@
+{
+  "compiler": {
+    "version": "0.8.16+commit.07a7930e"
+  },
+  "language": "Solidity",
+  "output": {
+    "abi": [
+      {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+      },
+      {
+        "inputs": [],
+        "name": "STAKE_PRICE",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "poolId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "_cipherTextHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "string",
+            "name": "_cipherTextCid",
+            "type": "string"
+          }
+        ],
+        "name": "commitCipher",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "poolId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "_operatorPublicKey",
+            "type": "string"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "_operatorPrivateKeyHash",
+            "type": "bytes32"
+          }
+        ],
+        "name": "commitOperator",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "poolData",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "operatorPublicKey",
+            "type": "string"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "operatorPrivateKeyHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "cipherTextHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "string",
+            "name": "cipherTextCid",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "poolId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "cipherText",
+            "type": "bytes[]"
+          }
+        ],
+        "name": "revealCipher",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "poolId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "privateKey",
+            "type": "string"
+          }
+        ],
+        "name": "revealOperator",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ],
+    "devdoc": {
+      "kind": "dev",
+      "methods": {},
+      "version": 1
+    },
+    "userdoc": {
+      "kind": "user",
+      "methods": {},
+      "version": 1
+    }
+  },
+  "settings": {
+    "compilationTarget": {
+      "src/CommitReveal.sol": "CommitReveal"
+    },
+    "evmVersion": "london",
+    "libraries": {},
+    "metadata": {
+      "bytecodeHash": "ipfs"
+    },
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "remappings": [
+      ":ds-test/=lib/forge-std/lib/ds-test/src/",
+      ":forge-std/=lib/forge-std/src/"
+    ]
+  },
+  "sources": {
+    "src/CommitReveal.sol": {
+      "keccak256": "0x8bf2231df53fc55ea8ef2ec32a18bba76e37e4eaf24b4339366923395d8520bf",
+      "license": "UNLICENSED",
+      "urls": [
+        "bzz-raw://eaa141c645f9c3d551312909dd745485267d443566deadc25ef00d9db3bdbcf5",
+        "dweb:/ipfs/QmesPit1MjWeXHF9WuRRTzrdQy8hDEwQVBTDhkwFsYWsbp"
+      ]
+    }
+  },
+  "version": 1
+}
