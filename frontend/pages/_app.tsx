@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-sync-scripts */
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
-import { ChakraProvider, Toast } from "@chakra-ui/react";
+import { ChakraProvider } from "@chakra-ui/react";
 import { extendTheme } from "@chakra-ui/react";
 import { NavBar } from "@components/core/Navbar";
 import Footer from "@components/core/Footer";

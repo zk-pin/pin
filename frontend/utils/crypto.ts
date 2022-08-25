@@ -207,7 +207,6 @@ export const decryptCipherTexts = (
   signatures: ISignature[],
   commitmentPoolId: number
 ) => {
-  console.log("start decryption");
   const newPair = new Keypair(
     new PrivKey(
       BigInt(
@@ -215,7 +214,6 @@ export const decryptCipherTexts = (
       )
     )
   );
-  console.log("newPair rawPubKey", newPair.pubKey.rawPubKey);
   const operatorPrivateKey = new PrivKey(BigInt(operatorPrivateKeyString));
   const revealedSigners: string[] = [];
   const serializedPublicKeySet = new Set(serializedPublicKeys);

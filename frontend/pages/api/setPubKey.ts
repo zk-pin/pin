@@ -7,7 +7,6 @@ export default async function setPubKey(
   req: NextApiRequest,
   res: NextApiResponse<VKeyRespData | any>
 ) {
-  console.log("attempt setPubKey");
   try {
     const { id, publicKey } = req.body;
     const user = await prisma.user.findUnique({

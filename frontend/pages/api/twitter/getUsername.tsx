@@ -3,6 +3,7 @@ import { CommitmentPool } from '@prisma/client';
 import { getSession } from 'next-auth/react';
 import { getToken } from 'next-auth/jwt';
 
+// TODO: fix get username
 // POST /api/twitter/getUsername
 // Required fields in body: userId
 export default async function handler(
@@ -25,7 +26,7 @@ export default async function handler(
     secret: process.env.NEXT_AUTH_SECRET,
   });
 
-  // TODO: fix get username
+  // need to wire up with twitteer client API
 
   return res.status(200).json({
     status: 'Ok',

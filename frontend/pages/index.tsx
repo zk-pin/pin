@@ -8,12 +8,9 @@ import {
   Button,
   HStack,
   Text,
-  VStack,
   Image as ChakraImage,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import { useLiveQuery } from "dexie-react-hooks";
-import { getCachedSignerData } from "@utils/dexie";
 import { PoolList } from "@components/PoolListItem";
 
 type Props = {

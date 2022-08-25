@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getSession } from "next-auth/react";
 import prisma from "@utils/prisma";
-import { CommitmentPool, User } from "@prisma/client";
+import { CommitmentPool } from "@prisma/client";
+import { IRevealedSigners } from "@utils/types";
 
 // PUT /api/revealCommitmentPool
 // Required fields in body: title, publicKey, threshold
@@ -17,12 +17,12 @@ export default async function handler(
   }
   try {
     // map the revealed signers to the relevant users
-    const users: any[] = []; // TODO: no ANY
+    const users: IRevealedSigners[] = [];
 
-    for (const revealedPublicKey of revealedSigners) {
+    for (const revealedSigner of revealedSigners) {
       const tempUser = await prisma.user.findUnique({
         where: {
-          serializedPublicKey: revealedPublicKey,
+          serializedPublicKey: revealedSigner,
         },
         select: {
           name: true,
@@ -40,6 +40,7 @@ export default async function handler(
       },
       data: {
         revealedPublicKeys: {
+          // TODO: rename to revealedSigners
           connect: users.map((user) => {
             return {
               id: user.id,
@@ -48,7 +49,6 @@ export default async function handler(
         },
       },
     });
-    console.log("matching users", users);
     return users;
   } catch (err: any) {
     console.log(err);
