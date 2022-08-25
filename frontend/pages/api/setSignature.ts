@@ -73,6 +73,6 @@ export default async function setSignature(
     }
   } catch (err: unknown) {
     console.error(err);
-    res.status(400).json({ msg: "Unexpected error occurred" });
+    res.status(400).json({ msg: `Unexpected error occurred + ${err}` });
   }
 }

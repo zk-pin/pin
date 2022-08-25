@@ -122,7 +122,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       console.log("session: ", session, " cached: ", cachedSigner);
       if (!session || !session.user || !cachedSigner?.privateKey) {
         toast({
-          title: "Uh oh something went wrong, can you try again?",
+          title: "Uh oh something went wrong with your session, can you try again?",
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -165,12 +165,14 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         });
         addSignerDataToCommitmentPoolInCache(props.id, cachedSigner.publicKey);
       } else {
-        toast({
-          title: "Looks like you've already signed before",
-          status: "warning",
-          duration: 3000,
-          isClosable: true,
-        });
+        res.json().then((body) => {
+          toast({
+            title: "Error: " + body.msg,
+            status: "warning",
+            duration: 3000,
+            isClosable: true,
+          });
+        })
       }
       setIsLoading(false);
     } catch (err: unknown) {
