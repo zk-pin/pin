@@ -44,7 +44,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
   // figure out if this is already revealed
   const revealedSigners = useMemo(() => {
-    return props.revealedPublicKeys;
+    return props.revealedSigners;
   }, [props])
 
   const toast = useToast();

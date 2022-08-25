@@ -1,14 +1,18 @@
-import { Text, VStack } from "@chakra-ui/react";
+import { HStack, IconButton, Text } from "@chakra-ui/react";
 import styles from "@styles/Home.module.css";
+import { FaGithub } from 'react-icons/fa'
 
 const Footer = () => {
   return (
     <footer className={`${styles.footer}`}>
-      <VStack gap={0}>
+      <HStack gap={0}>
+        <a target="_blank" href="https://github.com/zk-pin/pin" rel="noreferrer">
+          <IconButton aria-label="github" variant='ghost' icon={<FaGithub />} />
+        </a>
         <Text>
-          &copy; {new Date().getFullYear()}
+          zkPin &copy; {new Date().getFullYear()}
         </Text>
-      </VStack>
+      </HStack>
     </footer>
   );
 };
