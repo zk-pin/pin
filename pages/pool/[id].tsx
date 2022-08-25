@@ -51,7 +51,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     async () => {
       if (!session) { return; }
       // @ts-ignore TODO:
-      const signerData = await getCachedSignerData(sha256(session.user.id).toString());
+      const signerData = await getCachedSignerData(session.user.id);
       return signerData;
     }, [session, session?.user]);
 
@@ -89,12 +89,12 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     ) {
       const newPair = new Keypair();
       //@ts-ignore TODO:
-      addSignerDataToCache(session.user.id, newPair.privKey.rawPrivKey.toString(), serializePubKey(newPair))
+      addSignerDataToCache(session.user.id, serializePubKey(newPair), newPair.privKey.rawPrivKey.toString());
 
       //@ts-ignore TODO:
       updateUserPublicKey(session.user.id, serializePubKey(newPair));
     }
-  }, [cachedSigner?.privateKey, session]);
+  }, [cachedSigner, cachedSigner?.privateKey, session]);
 
   const refreshData = () => {
     router.replace(router.asPath);
@@ -103,19 +103,26 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const signAttestation = async () => {
     try {
       setIsLoading(true);
-      if (!session || !session.user || !cachedSigner) {
+      if (!session || !session.user || !cachedSigner?.privateKey) {
+        toast({
+          title: "Uh oh something went wrong, can you try again?",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+        setIsLoading(false);
         return;
       }
 
       //get signer private key
       const privKey = cachedSigner.privateKey;
-
-      cachedSigner
-      if (!privKey) {
-        return;
-      }
       const serializedOpPubKey = props.operator.operator_key;
       const serializedPublicKeys: string[] = props.serializedPublicKeys;
+
+      if (!privKey || serializedPublicKeys?.find((key) => !key)) {
+        setIsLoading(false);
+        return;
+      }
 
       const circuitInput: ProofInput = await generateCircuitInputs(
         serializedOpPubKey,

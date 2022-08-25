@@ -60,37 +60,37 @@ export async function getCachedCommitmentPoolData(commitmentPoolId: string) {
   }
 }
 
-export async function getCachedSignerData(hashedUserId: string) {
+export async function getCachedSignerData(userId: string) {
   try {
     let signers = await cache.signers.get({
-      hashedUserId: hashedUserId,
+      userId: userId,
     });
 
     return signers;
   } catch (error) {
-    console.log(`Failed to get ${hashedUserId}: ${error}`);
+    console.log(`Failed to get ${userId}: ${error}`);
     return undefined;
   }
 }
 
 export async function addSignerDataToCache(
-  hashedUserId: string,
+  userId: string,
   pubKey: string,
   privKey: string
 ) {
   try {
     let signer = await cache.signers.get({
-      hashedUserId: hashedUserId,
+      userId: userId,
     });
 
     if (!signer) {
       await cache.signers.add({
-        hashedUserId,
+        userId,
         privateKey: privKey,
         publicKey: pubKey,
       });
     }
   } catch (error) {
-    console.log(`Failed to add ${hashedUserId} to signers list s: ${error}`);
+    console.log(`Failed to add ${userId} to signers list s: ${error}`);
   }
 }

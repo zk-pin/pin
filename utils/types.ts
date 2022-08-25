@@ -52,7 +52,7 @@ export class DexieDatabase extends Dexie {
 
     this.version(1).stores({
       commitmentPools: "&commitmentPoolId",
-      signers: "&hashedUserId",
+      signers: "&userId",
     });
   }
 }
@@ -77,7 +77,7 @@ export type IPoolSigner = {
 
 // store user and key pair data on client side
 export type ISigner = {
-  hashedUserId: string;
+  userId: string;
   publicKey: string;
   privateKey: string;
 };
