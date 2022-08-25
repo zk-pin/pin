@@ -70,17 +70,17 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   }, [setIsOperator, session, props.id, cachedCommitmentPoolData]);
 
   // figure out if this attestation has already been signed
+  // only works for local signers (if you signed from the same device)
   useEffect(() => {
+    console.log('alreadySigned?', cachedSigner?.publicKey, cachedCommitmentPoolData?.localSigners)
     if (!cachedSigner || !cachedCommitmentPoolData) { return; }
-    console.log('alreadySigned?', cachedSigner?.publicKey, cachedCommitmentPoolData?.signers)
-
-    if (cachedCommitmentPoolData.signers.length !== 0 &&
-      cachedCommitmentPoolData.signers.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
+    if (cachedCommitmentPoolData.localSigners.length !== 0 &&
+      cachedCommitmentPoolData.localSigners.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
       setAlreadySigned(true);
     } else {
       setAlreadySigned(false);
     }
-  }, [cachedCommitmentPoolData, cachedCommitmentPoolData?.signers, cachedSigner, props.id, setAlreadySigned]);
+  }, [cachedCommitmentPoolData, cachedCommitmentPoolData?.localSigners, cachedSigner, props.id, setAlreadySigned]);
 
   useEffect(() => {
     //TODO: hacky fix to use globalComittmentPool
@@ -203,11 +203,12 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             {props.signatures.length || 0}/{props.threshold} signatures
           </Text>
           {!session && <Text color="gray.600">Please sign in to attest</Text>}
-          {!alreadySigned && (
+          {!alreadySigned ? (
             <Button disabled={!session} onClick={signAttestation}>
               Sign attestation
             </Button>
-          )}
+          ) :
+            (<Button disabled>Already signed!</Button>)}
           {(isOperator && props.signatures.length < props.threshold) &&
             <Box background="green.50" padding={4} borderRadius={8}>
               <Text>Welcome back! You need to wait until the threshold has been reached to reveal. Come back later.

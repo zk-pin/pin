@@ -22,7 +22,7 @@ export async function addOperatorDataToCache(
         operatorId: operatorId,
         operatorUserId: operatorUserId,
         operatorPrivateKey: operatorPrivateKey,
-        signers: [],
+        localSigners: [],
       });
     }
   } catch (error) {
@@ -35,12 +35,26 @@ export async function addSignerDataToCommitmentPoolInCache(
   signerPubKey: string
 ) {
   try {
-    await cache.commitmentPools
+    const pool = await cache.commitmentPools
       .where("commitmentPoolId")
       .equals(commitmentPoolId)
-      .modify((entry) => {
-        entry.signers.push({ publicKey: signerPubKey });
+      .first();
+    if (!pool) {
+      await cache.commitmentPools.add({
+        commitmentPoolId: commitmentPoolId,
+        operatorPublicKey: "",
+        operatorId: "",
+        operatorUserId: "",
+        localSigners: [{ publicKey: signerPubKey }],
       });
+    } else {
+      await cache.commitmentPools
+        .where("commitmentPoolId")
+        .equals(commitmentPoolId)
+        .modify((entry) => {
+          entry.localSigners.push({ publicKey: signerPubKey });
+        });
+    }
   } catch (error) {
     console.log(`Failed to add signer to ${commitmentPoolId}: ${error}`);
     return undefined;
