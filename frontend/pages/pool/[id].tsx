@@ -83,9 +83,16 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   // figure out if this attestation has already been signed
   // only works for local signers (if you signed from the same device)
   useEffect(() => {
-    if (!cachedSigner || !cachedCommitmentPoolData) { return; }
-    if (cachedCommitmentPoolData.localSigners && cachedCommitmentPoolData.localSigners.length !== 0 &&
-      cachedCommitmentPoolData.localSigners.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
+    if (!cachedSigner || !cachedCommitmentPoolData) {
+      return;
+    }
+    if (
+      cachedCommitmentPoolData.localSigners &&
+      cachedCommitmentPoolData.localSigners.length !== 0 &&
+      cachedCommitmentPoolData.localSigners.filter(
+        (signer) => signer.publicKey === cachedSigner.publicKey
+      )
+    ) {
       setAlreadySigned(true);
     } else {
       setAlreadySigned(false);
@@ -112,7 +119,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
           addSignerDataToCache(session.user.id, pubKey, privKey);
         } else if (res.status === 409) {
           //@ts-ignore TODO:
-          addSignerDataToCache(session.user.id, res.publicKey, '');
+          addSignerDataToCache(session.user.id, res.publicKey, "");
         }
       });
     }
@@ -154,7 +161,12 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       );
 
       const { proof, publicSignals } = await generateProof(circuitInput);
-      const res = await setSignature(proof, publicSignals, circuitInput.ciphertext, props.id);
+      const res = await setSignature(
+        proof,
+        publicSignals,
+        circuitInput.ciphertext,
+        props.id
+      );
       if (res.status === 200) {
         await refreshData();
         toast({
@@ -251,54 +263,63 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             <Button disabled={!session} onClick={signAttestation}>
               Sign attestation
             </Button>
-          ) :
-            (<Button disabled>Already signed!</Button>)}
-          {(isOperator && props.signatures.length < props.threshold) &&
+          ) : (
+            <Button disabled>Already signed!</Button>
+          )}
+          {isOperator && props.signatures.length < props.threshold && (
             <Box background="orange.50" padding={4} borderRadius={8}>
-              <Text>Welcome back! You need to wait until the threshold has been reached to reveal. Come back later.
+              <Text>
+                Welcome back! You need to wait until the threshold has been
+                reached to reveal. Come back later.
               </Text>
-            </Box>}
-          {(isOperator && props.signatures.length >= props.threshold) &&
+            </Box>
+          )}
+          {isOperator && props.signatures.length >= props.threshold && (
             <VStack background="green.50" padding={4} borderRadius={8}>
-              <Text>Hi {session?.user?.name}, This commitment pool is ready for reveal.</Text>
+              <Text>
+                Hi {session?.user?.name}, This commitment pool is ready for
+                reveal.
+              </Text>
               <Button onClick={startReveal}>Reveal</Button>
-            </VStack>}
+            </VStack>
+          )}
           {isLoading && <Spinner />}
-          {!isOperator && <VStack background="gray.50" padding={4} borderRadius={8}>
-            <Text color="gray.600">
-              {`Are you the operator? Sorry, we didn't recognize you but if you have your key pair handy we can sign you back in as an operator.`}
-            </Text>
-            <form
-              onSubmit={submitPrivateKeyForm.handleSubmit}
-              style={{ width: "100%", maxWidth: "1000px" }}
-            >
-              <VStack
-                textAlign="start"
-                justifyContent="start"
-                alignContent="start"
+          {!isOperator && (
+            <VStack background="gray.50" padding={4} borderRadius={8}>
+              <Text color="gray.600">
+                {`Are you the operator? Sorry, we didn't recognize you but if you have your key pair handy we can sign you back in as an operator.`}
+              </Text>
+              <form
+                onSubmit={submitPrivateKeyForm.handleSubmit}
+                style={{ width: "100%", maxWidth: "1000px" }}
               >
-                {submitPrivateKeyForm.errors.privateKey && (
-                  <Text color="red.400">
-                    *{submitPrivateKeyForm.errors.privateKey}
-                  </Text>
-                )}
-                <HStack width="100%">
-                  <Input
-                    id="privateKey"
-                    name="privateKey"
-                    type="text"
-                    placeholder="private key (make sure to check the URL is zkpin.xyz, be careful where you share this)"
-                    onChange={submitPrivateKeyForm.handleChange}
-                    value={submitPrivateKeyForm.values.privateKey}
-                  />
-                  <Button type="submit" disabled={!session}>
-                    Submit
-                  </Button>
-                </HStack>
-              </VStack>
-            </form>
-          </VStack>
-          }
+                <VStack
+                  textAlign="start"
+                  justifyContent="start"
+                  alignContent="start"
+                >
+                  {submitPrivateKeyForm.errors.privateKey && (
+                    <Text color="red.400">
+                      *{submitPrivateKeyForm.errors.privateKey}
+                    </Text>
+                  )}
+                  <HStack width="100%">
+                    <Input
+                      id="privateKey"
+                      name="privateKey"
+                      type="text"
+                      placeholder="private key (make sure to check the URL is zkpin.xyz, be careful where you share this)"
+                      onChange={submitPrivateKeyForm.handleChange}
+                      value={submitPrivateKeyForm.values.privateKey}
+                    />
+                    <Button type="submit" disabled={!session}>
+                      Submit
+                    </Button>
+                  </HStack>
+                </VStack>
+              </form>
+            </VStack>
+          )}
         </VStack>
       </Box>
     </Box>
@@ -352,11 +373,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       props: {
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
-<<<<<<< HEAD:pages/pool/[id].tsx
-        signatures: signatures.map(() => ""),
-=======
         signatures: JSON.parse(JSON.stringify(signatures)),
->>>>>>> 03c89c012508d3945866155b877acc65c9158c85:frontend/pages/pool/[id].tsx
       },
     };
   } else {
@@ -364,7 +381,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       props: {
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
-        signatures: signatures.map(() => ''),
+        signatures: signatures.map(() => ""),
       },
     };
   }

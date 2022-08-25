@@ -54,8 +54,13 @@ export default async function setSignature(
     if (containsCipherText.length === 0) {
       await prisma.signature.create({
         data: {
-          proof,
-          publicSignals,
+          ipfs: {
+            connect: {
+              ipfsHash: res.IpfsHash,
+              pinSize: res.PinSize,
+              timestamp: res.timestamp,
+            },
+          },
           ciphertext,
           commitment_pool: {
             connect: { id: commitmentPoolId },
