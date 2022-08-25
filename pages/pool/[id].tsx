@@ -131,10 +131,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         Number(props.id)
       );
 
-      // console.log(JSON.stringify(circuitInput)); // TODO: remove
-
       const { proof, publicSignals } = await generateProof(circuitInput);
-      setSignature(proof, publicSignals, circuitInput.ciphertext, props.id);
+      await setSignature(proof, publicSignals, circuitInput.ciphertext, props.id);
       await refreshData();
       toast({
         title: "Successfully signed and generated proof.",
@@ -145,6 +143,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       addSignerDataToCommitmentPoolInCache(props.id, cachedSigner.publicKey);
       setIsLoading(false);
     } catch (err: unknown) {
+      console.error(err);
       toast({
         title: "Uh oh something went wrong",
         status: "error",
@@ -296,7 +295,6 @@ export const getServerSideProps: GetServerSideProps = async ({
       commitment_poolId: pool?.id,
     },
   });
-
   return {
     props: {
       ...JSON.parse(JSON.stringify(pool)),
