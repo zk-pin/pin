@@ -33,7 +33,7 @@
         "maci-core": "^0.9.1",
         "maci-crypto": "^0.9.1",
         "maci-domainobjs": "^0.9.1",
-        "next": "12.2.5",
+        "next": "^12.2.5",
         "next-auth": "^4.10.3",
         "noble-ed25519": "^1.2.6",
         "react": "18.2.0",
