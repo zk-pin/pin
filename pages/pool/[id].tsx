@@ -83,15 +83,27 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   // figure out if this attestation has already been signed
   // only works for local signers (if you signed from the same device)
   useEffect(() => {
-    console.log('alreadySigned?', cachedSigner?.publicKey, cachedCommitmentPoolData?.localSigners)
-    if (!cachedSigner || !cachedCommitmentPoolData) { return; }
-    if (cachedCommitmentPoolData.localSigners.length !== 0 &&
-      cachedCommitmentPoolData.localSigners.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
+    if (!cachedSigner || !cachedCommitmentPoolData) {
+      return;
+    }
+    if (
+      cachedCommitmentPoolData.localSigners &&
+      cachedCommitmentPoolData.localSigners.length !== 0 &&
+      cachedCommitmentPoolData.localSigners.filter(
+        (signer) => signer.publicKey === cachedSigner.publicKey
+      )
+    ) {
       setAlreadySigned(true);
     } else {
       setAlreadySigned(false);
     }
-  }, [cachedCommitmentPoolData, cachedCommitmentPoolData?.localSigners, cachedSigner, props.id, setAlreadySigned]);
+  }, [
+    cachedCommitmentPoolData,
+    cachedCommitmentPoolData?.localSigners,
+    cachedSigner,
+    props.id,
+    setAlreadySigned,
+  ]);
 
   useEffect(() => {
     //TODO: hacky fix to use globalComittmentPool
@@ -146,6 +158,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       );
 
       const { proof, publicSignals } = await generateProof(circuitInput);
+
       await setSignature(
         proof,
         publicSignals,
@@ -239,15 +252,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             <Button disabled={!session} onClick={signAttestation}>
               Sign attestation
             </Button>
-          ) :
-            (<Button disabled>Already signed!</Button>)}
-          {(isOperator && props.signatures.length < props.threshold) &&
-            <Box background="green.50" padding={4} borderRadius={8}>
-              <Text>
-                Welcome back! You need to wait until the threshold has been
-                reached to reveal. Come back later.
-              </Text>
-            </Box>
+          ) : (
+            <Button disabled>Already signed!</Button>
           )}
           {isOperator && props.signatures.length >= props.threshold && (
             <Box background="green.50" padding={4} borderRadius={8}>

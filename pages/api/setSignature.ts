@@ -13,12 +13,13 @@ export default async function setSignature(
   res: NextApiResponse<any>
 ) {
   try {
-    const { committmentPoolId, proof, publicSignals, ciphertext } = req.body;
+    const { commitmentPoolId, proof, publicSignals, ciphertext } = req.body;
+    console.log("what is going on: ", commitmentPoolId);
     const options = {
       pinataMetadata: {
         name: "ZKPin",
         keyvalues: {
-          committmentPoolId: committmentPoolId.toString(),
+          commitmentPoolId: commitmentPoolId.toString(),
         },
       },
       pinataOptions: {

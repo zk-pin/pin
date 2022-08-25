@@ -16,7 +16,7 @@ import { PoolListItem } from "@components/PoolListItem";
 import { useEffect } from "react";
 import { updateUserPublicKey } from "../utils/api";
 import { Keypair } from "maci-domainobjs";
-import { serializePubKey } from "@utils/crypto";
+import { serializePubKey, testCircuit } from "@utils/crypto";
 import { useLiveQuery } from "dexie-react-hooks";
 import { addSignerDataToCache, getCachedSignerData } from "@utils/dexie";
 import sha256 from "crypto-js/sha256";
@@ -35,6 +35,10 @@ const Home: NextPage<Props> = ({ pools }) => {
     const signerData = await getCachedSignerData(session.user.id);
     return signerData;
   }, [session]);
+
+  useEffect(() => {
+    testCircuit();
+  }, []);
 
   //TODO: double hacky this is duplicated in [id]
   useEffect(() => {

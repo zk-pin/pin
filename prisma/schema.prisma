@@ -21,7 +21,6 @@ model CommitmentPool {
   threshold  Int // set by the operator (size after which everything is publicly revealed)
 
   signatures    Signature[]
-  revealed_keys GlobalPublicKey[] // remains empty until threshold reached
 }
 
 model Operator {
@@ -30,23 +29,26 @@ model Operator {
   commitment_pool CommitmentPool?
 }
 
+// model Ipfs {
+//   id Int @id @unique @default(autoincrement())
+//   ipfsHash String
+//   pinSize Int
+//   timestamp String
+//   signature Signature?
+// }
+
 model Signature {
   id                Int            @id @default(autoincrement())
   // for zkSNARK
   proof             Json
   publicSignals     Json
   ciphertext        String[]
+  // ipfs Ipfs @relation(fields: [ipfsId], references: [id])
+  // ipfsId Int
   commitment_pool   CommitmentPool @relation(fields: [commitment_poolId], references: [id])
   commitment_poolId Int
 }
 
-model GlobalPublicKey {
-  id                Int             @id @default(autoincrement())
-  pubkey            String
-  twitter_handle    String
-  commitment_pool   CommitmentPool? @relation(fields: [commitment_poolId], references: [id])
-  commitment_poolId Int?
-}
 
 // for OAuth
 model Account {
