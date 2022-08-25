@@ -22,9 +22,12 @@ import {
   getPublicKeyFromPrivate,
   serializePubKey,
 } from "@utils/crypto";
-import { Keypair } from "maci-domainobjs";
 import { generateProof } from "@utils/zkp";
-import { setSignature, updateUserPublicKey } from "@utils/api";
+import {
+  checkCachedSignerData,
+  setSignature,
+  updateUserPublicKey,
+} from "@utils/api";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   addOperatorDataToCache,
@@ -109,24 +112,10 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   ]);
 
   useEffect(() => {
-    //TODO: hacky fix to use globalComittmentPool
-    //TODO: make more secure or encrypt or ask to store offline
-    if (session?.user && !cachedSigner?.privateKey) {
-      const newPair = new Keypair();
-      const pubKey = serializePubKey(newPair);
-      const privKey = newPair.privKey.rawPrivKey.toString();
-      //@ts-ignore TODO:
-      updateUserPublicKey(session.user.id, pubKey).then((res) => {
-        if (res.status === 200) {
-          //@ts-ignore TODO:
-          addSignerDataToCache(session.user.id, pubKey, privKey);
-        } else if (res.status === 409) {
-          //@ts-ignore TODO:
-          addSignerDataToCache(session.user.id, res.publicKey, "");
-        }
-      });
+    if (session && cachedSigner) {
+      checkCachedSignerData(cachedSigner, session, toast);
     }
-  }, [cachedSigner, cachedSigner?.privateKey, session]);
+  }, [cachedSigner, cachedSigner?.privateKey, session, toast]);
 
   const refreshData = () => {
     router.replace(router.asPath);
@@ -135,6 +124,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const signAttestation = async () => {
     try {
       setIsLoading(true);
+      console.log("session: ", session, " cached: ", cachedSigner);
       if (!session || !session.user || !cachedSigner?.privateKey) {
         toast({
           title: "Uh oh something went wrong, can you try again?",

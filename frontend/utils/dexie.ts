@@ -79,6 +79,7 @@ export async function getCachedSignerData(userId: string) {
     let signers = await cache.signers.get({
       userId: userId,
     });
+    console.log("signers: ", signers);
 
     return signers;
   } catch (error) {
@@ -103,6 +104,11 @@ export async function addSignerDataToCache(
         privateKey: privKey,
         publicKey: pubKey,
       });
+    } else {
+      await cache.signers
+        .where("userId")
+        .equals(userId)
+        .modify({ publicKey: pubKey });
     }
   } catch (error) {
     console.log(`Failed to add ${userId} to signers list s: ${error}`);
