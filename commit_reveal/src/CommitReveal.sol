@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-// import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@solmate/src/utils/ReentrancyGuard.sol";
 
-contract CommitReveal {
+contract CommitReveal is ReentrancyGuard {
   uint256 public constant STAKE_PRICE = 0.07 ether; // stake price
 
   struct PoolData {
@@ -72,6 +72,7 @@ contract CommitReveal {
   // withdraws stake upon reveal of private key
   function revealOperator(uint256 poolId, string calldata privateKey)
     external
+    nonReentrant
     readyToReveal(poolId)
   {
     require(
@@ -84,6 +85,7 @@ contract CommitReveal {
   // withdraws stake upon reveal of cipher text
   function revealCipher(uint256 poolId, bytes[] calldata cipherText)
     external
+    nonReentrant
     readyToReveal(poolId)
   {
     require(
