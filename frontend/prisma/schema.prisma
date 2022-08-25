@@ -10,7 +10,6 @@ datasource db {
 model CommitmentPool {
   id          Int         @id @unique @default(autoincrement())
   title       String
-<<<<<<< HEAD
   description String? // optional description
   created_at  DateTime @default(now()) @db.Timestamptz(6)
 
@@ -19,14 +18,6 @@ model CommitmentPool {
   threshold  Int // set by the operator (size after which everything is publicly revealed)
 
   signatures    Signature[]
-=======
-  description String?
-  created_at  DateTime    @default(now()) @db.Timestamptz(6)
-  operatorId  Int         @unique
-  threshold   Int
-  operator    Operator    @relation(fields: [operatorId], references: [id])
-  signatures  Signature[]
->>>>>>> bf5535ecf2ab4deb3f4d7465876c7256b17ca90d
 }
 
 model Operator {
