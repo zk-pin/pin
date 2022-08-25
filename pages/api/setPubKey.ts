@@ -14,7 +14,7 @@ export default async function setPubKey(
         id: id,
       },
       data: {
-        seriailizedPublicKey: publicKey,
+        serializedPublicKey: publicKey,
       },
     });
 

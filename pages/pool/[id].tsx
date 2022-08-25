@@ -196,7 +196,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             {props.signatures.length || 0}/{props.threshold} signatures
           </Text>
           {!session && <Text color="gray.600">Please sign in to attest</Text>}
-          {!isOperator && !alreadySigned && (
+          {!alreadySigned && (
             <Button disabled={!session} onClick={signAttestation}>
               Sign attestation
             </Button>
@@ -278,12 +278,10 @@ export const getServerSideProps: GetServerSideProps = async ({
     serializedPublicKeys: (
       await prisma.user.findMany({
         select: {
-          // @ts-ignore TODO:
-          seriailizedPublicKey: true,
+          serializedPublicKey: true,
         },
       })
-      // @ts-ignore TODO:
-    ).map((el) => el.seriailizedPublicKey),
+    ).map((el) => el.serializedPublicKey),
   };
 
   const signatures = await prisma.signature.findMany({

@@ -80,15 +80,15 @@ model Session {
 }
 
 model User {
-  id                   String    @id @default(cuid())
-  seriailizedPublicKey String?   @unique // TODO: fix typing
-  name                 String?
-  username             String?   @map("username")
-  email                String?   @unique
-  emailVerified        DateTime? @map("email_verified")
-  image                String?
-  accounts             Account[]
-  sessions             Session[]
+  id                  String    @id @default(cuid())
+  serializedPublicKey String?   @unique
+  name                String?
+  username            String?   @map("username")
+  email               String?   @unique
+  emailVerified       DateTime? @map("email_verified")
+  image               String?
+  accounts            Account[]
+  sessions            Session[]
 
   @@map("users")
 }

@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import prisma from "@utils/prisma";
 
-//PUT /api/setPubKey
+//PUT /api/setSignature
 export default async function setSignature(
   req: NextApiRequest,
   res: NextApiResponse<any>
