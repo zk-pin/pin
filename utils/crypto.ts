@@ -8,7 +8,8 @@ import assert from "assert";
 import { createMerkleTree, formatPubKey } from "./zkp";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 import { encrypt, decrypt } from "maci-crypto";
-import { ProofInput, SerializedKeyPair } from "./types";
+import { ISignature, ProofInput, SerializedKeyPair } from "./types";
+import { User } from "@prisma/client";
 
 export const DELIMETER = "%--%";
 
@@ -31,7 +32,7 @@ export const generatePrivKey = () => {
 
 // required for front-end
 // DO NOT DELETE
-// Note generateNewKeyPair returns a seriailized representation of the BigInt keys
+// Note generateNewKeyPair returns a serializedPublicKey representation of the BigInt keys
 // privateKey: String(privKey)
 // publicKey: String(publicKey[0]) + "%--%" + String(publicKey[1])
 export const generateNewKeyPair = (): SerializedKeyPair => {
@@ -182,8 +183,7 @@ export const generateCircuitInputs = async (
   const plaintext: any[] = [BigInt(committmentPoolId)];
 
   const ciphertext = await encrypt(plaintext, sharedSecret);
-  // const decryptedCiphertext = await decrypt(ciphertext, sharedSecret);
-  // console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
+  const decryptedCiphertext = await decrypt(ciphertext, sharedSecret);
 
   const merkle = createMerkleTree(signer.pubKey.rawPubKey, globalPubkeyPool);
   const res = await prepareInputs(
@@ -200,6 +200,19 @@ export const generateCircuitInputs = async (
     ...res,
   };
 };
+
+// console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
+
+// cipher text array
+// users
+// array of length 2 strings, 0: IV, config hash, 1: actual message
+//  Keypair.genEcdhSharedKey( to generate shared key, Operator priv Key and the signer public key that I have to figure out
+// cast to big ints
+export const decryptCipherTexts = (
+  operatorPrivKey: string,
+  serializedPublicKeys: string[],
+  signatures: ISignature[]
+) => {};
 
 const prepareInputs = async (
   opPubkey: BigInt[],
@@ -266,6 +279,6 @@ export async function testCircuit() {
 export function JSONStringifyCustom(val: any) {
   return JSON.stringify(
     val,
-    (key, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
+    (_, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
   );
 }
