@@ -6,7 +6,7 @@ type Props = {
   pool: CommitmentPoolProps
 }
 
-export const PoolListItem = ({ pool }: Props) => {
+const PoolListItem = ({ pool }: Props) => {
   return (
     <Link href={`pool/${pool.id}`}>
       <Box as="button" width={'100%'} border='0.5px' borderRadius={8} padding={4} background={'gray.50'} _hover={{ background: 'gray.100' }}>
@@ -22,4 +22,14 @@ export const PoolListItem = ({ pool }: Props) => {
         </HStack>
       </Box>
     </Link>)
+}
+
+export const PoolList = ({ commitmentPools }: { commitmentPools: CommitmentPoolProps[] }) => {
+  return (
+    <VStack marginBottom={8} width={'100%'} maxWidth="1000px">
+      {commitmentPools.map((pool, idx) => (
+        <PoolListItem key={idx} pool={pool} />
+      ))}
+    </VStack>
+  )
 }

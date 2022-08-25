@@ -14,7 +14,7 @@ import {
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { getCachedSignerData } from "@utils/dexie";
-import { PoolListItem } from "@components/PoolListItem";
+import { PoolList } from "@components/PoolListItem";
 
 type Props = {
   pools: CommitmentPoolProps[];
@@ -22,18 +22,6 @@ type Props = {
 
 const Home: NextPage<Props> = ({ pools }) => {
   const { data: session } = useSession();
-  const cachedSigner = useLiveQuery(async () => {
-    if (!session) {
-      return;
-    }
-    // @ts-ignore TODO:
-    const signerData = await getCachedSignerData(session.user.id);
-    return signerData;
-  }, [session]);
-
-  // useEffect(() => {
-  //   testCircuit();
-  // }, []);
 
   return (
     <Box className={styles.container}>
@@ -59,11 +47,7 @@ const Home: NextPage<Props> = ({ pools }) => {
             <Text fontWeight="bold">Signed in as {session?.user?.name}</Text>
           </HStack>
         )}
-        <VStack maxHeight="500px" overflow="scroll" marginBottom={8}>
-          {pools.map((pool, idx) => (
-            <PoolListItem key={idx} pool={pool} />
-          ))}
-        </VStack>
+        <PoolList commitmentPools={pools} />
         <Link href="/create">
           <Button>Create Commitment Pool</Button>
         </Link>
