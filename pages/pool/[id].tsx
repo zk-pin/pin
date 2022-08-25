@@ -30,6 +30,7 @@ import sha256 from "crypto-js/sha256";
 import { useRouter } from "next/router";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
+  console.log(props)
   const { data: session } = useSession();
 
   const [isOperator, setIsOperator] = useState(false);
@@ -49,11 +50,10 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const cachedSigner = useLiveQuery(
     async () => {
       if (!session) { return; }
-
       // @ts-ignore TODO:
       const signerData = await getCachedSignerData(sha256(session.user.id).toString());
       return signerData;
-    }, [session]);
+    }, [session, session?.user]);
 
   // figure out if current user is the operator
   useEffect(() => {
@@ -187,8 +187,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             {new Date(Date.parse(props.created_at)).toLocaleTimeString()}{" "}
           </Text>
           <Text>
-            {/* @ts-ignore */}
-            {props.signatures || 0}/{props.threshold} signatures before reveal
+            {props.signatures.length || 0}/{props.threshold} signatures
           </Text>
           {!session && <Text color="gray.600">Please sign in to attest</Text>}
           {!isOperator && !alreadySigned && (
@@ -276,19 +275,17 @@ export const getServerSideProps: GetServerSideProps = async ({
     ).map((el) => el.seriailizedPublicKey),
   };
 
-  const numSignatures = {
-    signatures: await prisma.signature.count({
-      where: {
-        commitment_poolId: pool?.id,
-      },
-    }),
-  };
+  const signatures = await prisma.signature.findMany({
+    where: {
+      commitment_poolId: pool?.id,
+    },
+  });
 
   return {
     props: {
       ...JSON.parse(JSON.stringify(pool)),
       ...JSON.parse(JSON.stringify(sybilAddresses)),
-      ...JSON.parse(JSON.stringify(numSignatures)),
+      signatures: JSON.parse(JSON.stringify(signatures)),
     },
   };
 };
