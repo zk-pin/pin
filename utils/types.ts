@@ -66,7 +66,7 @@ export type ICommitmentPools = {
   operatorId: string | number;
   operatorPublicKey: string;
   operatorUserId: string; // store operator user id on client side for convenience
-  signers: IPoolSigner[];
+  localSigners: IPoolSigner[];
   operatorPrivateKey?: string;
 };
 

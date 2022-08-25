@@ -35,19 +35,35 @@ export default async function setSignature(
     );
 
     console.log("ipfs: ", res);
-
-    await prisma.signature.create({
-      data: {
-        proof,
-        publicSignals,
-        ciphertext,
-        commitment_poolId: {
-          connect: [{ id: committmentPoolId }],
-        },
+    // enforce no duplicate signatures
+    const signatures = await prisma.signature.findMany({
+      where: {
+        commitment_poolId: commitmentPoolId,
+      },
+      select: {
+        ciphertext: true,
       },
     });
 
-    res.status(200).json({ success: true });
+    const containsCipherText = signatures.filter(
+      (signature) => signature.ciphertext === ciphertext
+    );
+
+    if (!containsCipherText) {
+      await prisma.signature.create({
+        data: {
+          proof,
+          publicSignals,
+          ciphertext,
+          commitment_pool: {
+            connect: { id: commitmentPoolId },
+          },
+        },
+      });
+      res.status(200).json({ success: true });
+    } else {
+      res.status(200).json({ success: false, msg: "already signed this pool" });
+    }
   } catch (err: unknown) {
     console.error(err);
     res.status(404).json({ msg: "Unexpected error occurred" });
