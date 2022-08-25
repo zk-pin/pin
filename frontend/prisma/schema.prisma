@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,8 +8,9 @@ datasource db {
 }
 
 model CommitmentPool {
-  id          Int      @id @unique @default(autoincrement())
+  id          Int         @id @unique @default(autoincrement())
   title       String
+<<<<<<< HEAD
   description String? // optional description
   created_at  DateTime @default(now()) @db.Timestamptz(6)
 
@@ -21,6 +19,14 @@ model CommitmentPool {
   threshold  Int // set by the operator (size after which everything is publicly revealed)
 
   signatures    Signature[]
+=======
+  description String?
+  created_at  DateTime    @default(now()) @db.Timestamptz(6)
+  operatorId  Int         @unique
+  threshold   Int
+  operator    Operator    @relation(fields: [operatorId], references: [id])
+  signatures  Signature[]
+>>>>>>> bf5535ecf2ab4deb3f4d7465876c7256b17ca90d
 }
 
 model Operator {
@@ -44,6 +50,8 @@ model Signature {
   ipfsId Int @unique
   commitment_pool   CommitmentPool @relation(fields: [commitment_poolId], references: [id])
   commitment_poolId Int
+  commitment_pool   CommitmentPool @relation(fields: [commitment_poolId], references: [id])
+  Ipfs              Ipfs           @relation(fields: [ipfsId], references: [id])
 }
 
 
@@ -54,15 +62,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String  @map("provider_account_id")
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -82,7 +89,7 @@ model User {
   id                  String    @id @default(cuid())
   serializedPublicKey String?   @unique
   name                String?
-  username            String?   @map("username")
+  username            String?
   email               String?   @unique
   emailVerified       DateTime? @map("email_verified")
   image               String?
@@ -99,4 +106,12 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verificationtokens")
+}
+
+model Ipfs {
+  id        Int        @id @unique @default(autoincrement())
+  ipfsHash  String
+  pinSize   Int
+  timestamp String
+  Signature Signature?
 }

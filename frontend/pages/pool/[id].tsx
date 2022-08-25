@@ -9,7 +9,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import prisma from "@utils/prisma";
-import { CommitmentPoolProps, ISignature, ProofInput } from "@utils/types";
+import { CommitmentPoolProps, ProofInput } from "@utils/types";
 import { GetServerSideProps, NextPage } from "next";
 import styles from "@styles/Home.module.css";
 import { useEffect, useState } from "react";
@@ -227,6 +227,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   });
 
   const startReveal = () => {
+<<<<<<< HEAD
     if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) {
       return;
     }
@@ -236,6 +237,11 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       props.signatures
     );
   };
+=======
+    if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) { return; }
+    decryptCipherTexts(cachedCommitmentPoolData?.operatorPrivateKey, props.serializedPublicKeys, props.signatures, parseInt(props.id))
+  }
+>>>>>>> bf5535ecf2ab4deb3f4d7465876c7256b17ca90d
 
   return (
     <Box className={styles.container}>

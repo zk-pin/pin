@@ -205,7 +205,7 @@ export const decryptCipherTexts = (
   operatorPrivateKeyString: string,
   serializedPublicKeys: string[],
   signatures: ISignature[],
-  commitmentPoolId: Number
+  commitmentPoolId: number
 ) => {
   const operatorPrivateKey = new PrivKey(BigInt(operatorPrivateKeyString));
 
