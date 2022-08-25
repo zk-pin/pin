@@ -21,13 +21,14 @@ i generate c = sym_enc(msg, ecdh(my_priv, pool_pub))
 
 i generate a snark proof that:
 
-private input my_priv, my_pub
-public inputs pool_pub, merkle_root, msg, c
+private input my_priv, my_pub, c
+public inputs pool_pub, merkle_root, msg, chash
 
 shared_secret = ecdh(my_priv, pool_pub)
 c = sym_enc(msg, shared_secret)
 my_pub in merkle_root
 my_pub = pubkeygen(my_priv)
+chash = hash(c)
 ```
 
 _Created at HackLodge Crypto Edition 2022 (Sponsored by 0xParc)_

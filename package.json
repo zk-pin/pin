@@ -17,6 +17,7 @@
         "@next-auth/prisma-adapter": "^1.0.4",
         "@noble/ed25519": "^1.6.1",
         "@openzeppelin/contracts": "^4.7.3",
+        "@pinata/sdk": "^1.1.26",
         "@prisma/client": "^4.2.1",
         "axios": "^0.27.2",
         "blake-hash": "^2.0.0",

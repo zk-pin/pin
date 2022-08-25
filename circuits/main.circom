@@ -12,13 +12,14 @@ template Pin(d) {
     signal input poolPubKey[2];
     signal input merkleRoot;
     signal input msg;
-    signal input ciphertext[2];
+    signal input ciphertextHash;
 
     //private inputs
     signal input signerPrivKeyHash;
     signal input signerPubKey[2]; 
     signal input pathElements[d];
     signal input pathIndices[d];
+    signal input ciphertext[2];
 
     
     //compute shared secret
@@ -55,6 +56,16 @@ template Pin(d) {
     derivedPubKey.pubKey[0] === signerPubKey[0];
     derivedPubKey.pubKey[1] === signerPubKey[1];
 
+
+    //Verify ciphertextHash corresponds to the correct ciphertext
+    component cipherTextHasher = MiMCSponge(2, 220, 1);
+    cipherTextHasher.ins[0] <== ciphertext[0];
+    cipherTextHasher.ins[1] <== ciphertext[1];
+
+    cipherTextHasher.k <== 123;
+    ciphertextHash === cipherTextHasher.outs[0];
+
 }
 
-component main { public [poolPubKey, merkleRoot, msg, ciphertext] } = Pin(30);
+
+component main { public [poolPubKey, merkleRoot, msg, ciphertextHash] } = Pin(30);

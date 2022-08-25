@@ -27,13 +27,16 @@ type Props = {
 
 const Home: NextPage<Props> = ({ pools }) => {
   const { data: session } = useSession();
-  const cachedSigner = useLiveQuery(
-    async () => {
-      if (!session) { return; }
-      // @ts-ignore TODO:
-      const signerData = await getCachedSignerData(sha256(session.user.id).toString());
-      return signerData;
-    }, [session]);
+  const cachedSigner = useLiveQuery(async () => {
+    if (!session) {
+      return;
+    }
+    // @ts-ignore TODO:
+    const signerData = await getCachedSignerData(
+      sha256(session.user.id).toString()
+    );
+    return signerData;
+  }, [session]);
 
   //TODO: double hacky this is duplicated in [id]
   useEffect(() => {
@@ -42,9 +45,7 @@ const Home: NextPage<Props> = ({ pools }) => {
     }
     //TODO: hacky fix to use globalComittmentPool
     //TODO: make more secure or encrypt or ask to store offline
-    if (
-      session?.user && !cachedSigner?.privateKey
-    ) {
+    if (session?.user && !cachedSigner?.privateKey) {
       const newPair = new Keypair();
 
       const pubKey = serializePubKey(newPair);
@@ -56,6 +57,10 @@ const Home: NextPage<Props> = ({ pools }) => {
       updateUserPublicKey(session.user.id, pubKey);
     }
   }, [cachedSigner?.privateKey, session]);
+
+  // useEffect(() => {
+  //   testCircuit();
+  // }, []);
 
   return (
     <Box className={styles.container}>
@@ -98,7 +103,7 @@ export const getStaticProps: GetStaticProps = async () => {
   const pools = await prisma.commitmentPool.findMany({
     include: {
       signatures: true,
-    }
+    },
   });
   return {
     props: { pools: JSON.parse(JSON.stringify(pools)) },

@@ -5,7 +5,7 @@ import * as crypto from "crypto";
 const ff = require("ffjavascript");
 const createBlakeHash = require("blake-hash");
 import assert from "assert";
-import { createMerkleTree, formatPubKey } from "./zkp";
+import { createMerkleTree, hashBigIntArr } from "./zkp";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 import { encrypt, decrypt } from "maci-crypto";
 import { ProofInput, SerializedKeyPair } from "./types";
@@ -182,7 +182,7 @@ export const generateCircuitInputs = async (
   const plaintext: any[] = [BigInt(committmentPoolId)];
 
   const ciphertext = await encrypt(plaintext, sharedSecret);
-  // const decryptedCiphertext = await decrypt(ciphertext, sharedSecret);
+  // const decryptedCiphertext = await decrypt(cipherext, sharedSecret);
   // console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
 
   const merkle = createMerkleTree(signer.pubKey.rawPubKey, globalPubkeyPool);
@@ -214,6 +214,10 @@ const prepareInputs = async (
       ciphertext.iv.toString(),
       ...ciphertext.data.map((el) => el.toString()),
     ],
+    ciphertextHash: hashBigIntArr([
+      ciphertext.iv,
+      ...ciphertext.data,
+    ]).toString(),
     signerPrivKeyHash: (
       await formatPrivKeyForBabyJub(signerPrivKey)
     ).toString(),
@@ -239,10 +243,12 @@ export async function testCircuit() {
   const plaintext: any[] = [BigInt(1)];
 
   const ciphertext = await encrypt(plaintext, sharedSecret);
+
   const decryptedCiphertext = await decrypt(
     ciphertext,
     Keypair.genEcdhSharedKey(operator.privKey, signer.pubKey)
   );
+
   console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
 
   const res = await prepareInputs(
@@ -254,13 +260,15 @@ export async function testCircuit() {
 
   const merkle = createMerkleTree(signer.pubKey.rawPubKey, publicKeyLeaves);
 
-  return {
+  const finalRes = {
     msg: BigInt(1).toString(),
     merkleRoot: merkle.pathRoot.toString(),
     pathElements: merkle.pathElements.map((el) => el.toString()),
     pathIndices: merkle.pathIndices.map((el) => el.toString()),
     ...res,
   };
+  console.log(JSONStringifyCustom(finalRes));
+  return finalRes;
 }
 
 export function JSONStringifyCustom(val: any) {

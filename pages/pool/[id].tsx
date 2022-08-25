@@ -26,7 +26,13 @@ import { Keypair } from "maci-domainobjs";
 import { generateProof } from "@utils/zkp";
 import { setSignature, updateUserPublicKey } from "@utils/api";
 import { useLiveQuery } from "dexie-react-hooks";
-import { addOperatorDataToCache, getCachedSignerData, getCachedCommitmentPoolData, addSignerDataToCommitmentPoolInCache, addSignerDataToCache } from '@utils/dexie';
+import {
+  addOperatorDataToCache,
+  getCachedSignerData,
+  getCachedCommitmentPoolData,
+  addSignerDataToCommitmentPoolInCache,
+  addSignerDataToCache,
+} from "@utils/dexie";
 import sha256 from "crypto-js/sha256";
 import { useRouter } from "next/router";
 
@@ -40,20 +46,26 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const toast = useToast();
   const router = useRouter();
 
-  const cachedCommitmentPoolData = useLiveQuery(
-    async () => {
-      if (!session) { return; }
-      const operatorData = await getCachedCommitmentPoolData(props.id)
-      return operatorData;
-    }, [session]);
+  const cachedCommitmentPoolData = useLiveQuery(async () => {
+    if (!session) {
+      return;
+    }
+    console.log(cachedSigner);
+    const operatorData = await getCachedCommitmentPoolData(props.id);
+    return operatorData;
+  }, [session]);
 
-  const cachedSigner = useLiveQuery(
-    async () => {
-      if (!session) { return; }
-      // @ts-ignore TODO:
-      const signerData = await getCachedSignerData(sha256(session.user.id).toString());
-      return signerData;
-    }, [session, session?.user]);
+  const cachedSigner = useLiveQuery(async () => {
+    if (!session) {
+      return;
+    }
+
+    // @ts-ignore TODO:
+    const signerData = await getCachedSignerData(
+      sha256(session.user.id).toString()
+    );
+    return signerData;
+  }, [session]);
 
   // figure out if current user is the operator
   useEffect(() => {
@@ -62,7 +74,10 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       return;
     }
     const operatorUserId = cachedCommitmentPoolData?.hashedOperatorUserId;
-    if (!operatorUserId) { setIsOperator(false); return; }
+    if (!operatorUserId) {
+      setIsOperator(false);
+      return;
+    }
 
     // @ts-ignore TODO:
     if (sha256(session.user.id).toString() === operatorUserId) {
@@ -72,24 +87,38 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
   // figure out if this attestation has already been signed
   useEffect(() => {
-    if (!cachedSigner || !cachedCommitmentPoolData) { return; }
-    if (cachedCommitmentPoolData.signers.length !== 0 &&
-      cachedCommitmentPoolData.signers.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
+    if (!cachedSigner || !cachedCommitmentPoolData) {
+      return;
+    }
+    if (
+      cachedCommitmentPoolData.signers.length !== 0 &&
+      cachedCommitmentPoolData.signers.filter(
+        (signer) => signer.publicKey === cachedSigner.publicKey
+      )
+    ) {
       setAlreadySigned(true);
     } else {
       setAlreadySigned(false);
     }
-  }, [cachedCommitmentPoolData, cachedCommitmentPoolData?.signers, cachedSigner, props.id, setAlreadySigned]);
+  }, [
+    cachedCommitmentPoolData,
+    cachedCommitmentPoolData?.signers,
+    cachedSigner,
+    props.id,
+    setAlreadySigned,
+  ]);
 
   useEffect(() => {
     //TODO: hacky fix to use globalComittmentPool
     //TODO: make more secure or encrypt or ask to store offline
-    if (
-      session?.user && !cachedSigner?.privateKey
-    ) {
+    if (session?.user && !cachedSigner?.privateKey) {
       const newPair = new Keypair();
       //@ts-ignore TODO:
-      addSignerDataToCache(session.user.id, newPair.privKey.rawPrivKey.toString(), serializePubKey(newPair))
+      addSignerDataToCache(
+        session.user.id,
+        newPair.privKey.rawPrivKey.toString(),
+        serializePubKey(newPair)
+      );
 
       //@ts-ignore TODO:
       updateUserPublicKey(session.user.id, serializePubKey(newPair));
@@ -110,7 +139,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       //get signer private key
       const privKey = cachedSigner.privateKey;
 
-      cachedSigner
+      cachedSigner;
       if (!privKey) {
         return;
       }
@@ -160,7 +189,9 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     },
     validationSchema: submitPrivateKeySchema,
     onSubmit: async (values) => {
-      if (!session) { return; }
+      if (!session) {
+        return;
+      }
       const privKey = values.privateKey;
       const derivedPubKey = await getPublicKeyFromPrivate(privKey);
       const res = await fetch(`/api/operator/${props.operatorId}`, {
@@ -171,15 +202,26 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       if (content.operator_key === derivedPubKey) {
         setIsOperator(true);
         // @ts-ignore TODO:
-        addOperatorDataToCache(props.id, content.operator_key, content.id, session.user.id);
+        addOperatorDataToCache(
+          props.id,
+          content.operator_key,
+          content.id,
+          session.user.id
+        );
       }
     },
   });
 
   const startReveal = () => {
-    if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) { return; }
-    decryptCipherTexts(cachedCommitmentPoolData?.operatorPrivateKey, props.serializedPublicKeys, props.signatures)
-  }
+    if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) {
+      return;
+    }
+    decryptCipherTexts(
+      cachedCommitmentPoolData?.operatorPrivateKey,
+      props.serializedPublicKeys,
+      props.signatures
+    );
+  };
 
   return (
     <Box className={styles.container}>
@@ -201,16 +243,23 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
               Sign attestation
             </Button>
           )}
-          {(isOperator && props.signatures.length < props.threshold) &&
+          {isOperator && props.signatures.length < props.threshold && (
             <Box background="green.50" padding={4} borderRadius={8}>
-              <Text>Welcome back! You need to wait until the threshold has been reached to reveal. Come back later.
+              <Text>
+                Welcome back! You need to wait until the threshold has been
+                reached to reveal. Come back later.
               </Text>
-            </Box>}
-          {(isOperator && props.signatures.length >= props.threshold) &&
+            </Box>
+          )}
+          {isOperator && props.signatures.length >= props.threshold && (
             <Box background="green.50" padding={4} borderRadius={8}>
-              <Text>Welcome back! You need to wait until the threshold has been reached to reveal. Come back later.</Text>
+              <Text>
+                Welcome back! You need to wait until the threshold has been
+                reached to reveal. Come back later.
+              </Text>
               <Button onClick={startReveal}>Reveal</Button>
-            </Box>}
+            </Box>
+          )}
           {isLoading && <Spinner />}
           <VStack background="gray.50" padding={4} borderRadius={8}>
             <Text color="gray.600">
