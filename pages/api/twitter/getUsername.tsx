@@ -26,8 +26,6 @@ export default async function handler(
   });
 
   // TODO: fix get username
-  // console.log('session', session);
-  // console.log('token', token);
 
   return res.status(200).json({
     status: 'Ok',

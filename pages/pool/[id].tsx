@@ -30,7 +30,6 @@ import sha256 from "crypto-js/sha256";
 import { useRouter } from "next/router";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
-  console.log(props)
   const { data: session } = useSession();
 
   const [isOperator, setIsOperator] = useState(false);
@@ -123,7 +122,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         Number(props.id)
       );
 
-      console.log(JSON.stringify(circuitInput));
+      // console.log(JSON.stringify(circuitInput)); // TODO: remove
 
       const { proof, publicSignals } = await generateProof(circuitInput);
       setSignature(proof, publicSignals, circuitInput.ciphertext, props.id);
