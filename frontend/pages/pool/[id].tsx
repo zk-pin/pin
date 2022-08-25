@@ -39,7 +39,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
   // figure out if this is already revealed
   const revealedSigners = useMemo(() => {
-    return props.revealedSigners;
+    return props.revealedPublicKeys;
   }, [props]);
 
   const toast = useToast();
@@ -322,6 +322,8 @@ export const getServerSideProps: GetServerSideProps = async ({
       },
     },
   });
+
+  console.log("pool: ", pool);
 
   // global public keys
   const sybilAddresses = {
