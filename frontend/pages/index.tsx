@@ -22,13 +22,18 @@ type Props = {
 
 const Home: NextPage<Props> = ({ pools }) => {
   const { data: session } = useSession();
-  const cachedSigner = useLiveQuery(
-    async () => {
-      if (!session) { return; }
-      // @ts-ignore TODO:
-      const signerData = await getCachedSignerData(session.user.id);
-      return signerData;
-    }, [session]);
+  const cachedSigner = useLiveQuery(async () => {
+    if (!session) {
+      return;
+    }
+    // @ts-ignore TODO:
+    const signerData = await getCachedSignerData(session.user.id);
+    return signerData;
+  }, [session]);
+
+  // useEffect(() => {
+  //   testCircuit();
+  // }, []);
 
   return (
     <Box className={styles.container}>
@@ -71,7 +76,7 @@ export const getStaticProps: GetStaticProps = async () => {
   const pools = await prisma.commitmentPool.findMany({
     include: {
       signatures: true,
-    }
+    },
   });
   return {
     props: { pools: JSON.parse(JSON.stringify(pools)) },

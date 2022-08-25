@@ -23,9 +23,19 @@ import {
   serializePubKey,
 } from "@utils/crypto";
 import { generateProof } from "@utils/zkp";
-import { checkCachedSignerData, setSignature, updateUserPublicKey } from "@utils/api";
+import {
+  checkCachedSignerData,
+  setSignature,
+  updateUserPublicKey,
+} from "@utils/api";
 import { useLiveQuery } from "dexie-react-hooks";
-import { addOperatorDataToCache, getCachedSignerData, getCachedCommitmentPoolData, addSignerDataToCommitmentPoolInCache, addSignerDataToCache } from '@utils/dexie';
+import {
+  addOperatorDataToCache,
+  getCachedSignerData,
+  getCachedCommitmentPoolData,
+  addSignerDataToCommitmentPoolInCache,
+  addSignerDataToCache,
+} from "@utils/dexie";
 import { useRouter } from "next/router";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
@@ -38,20 +48,22 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const toast = useToast();
   const router = useRouter();
 
-  const cachedCommitmentPoolData = useLiveQuery(
-    async () => {
-      if (!session) { return; }
-      const operatorData = await getCachedCommitmentPoolData(props.id)
-      return operatorData;
-    }, [session]);
+  const cachedCommitmentPoolData = useLiveQuery(async () => {
+    if (!session) {
+      return;
+    }
+    const operatorData = await getCachedCommitmentPoolData(props.id);
+    return operatorData;
+  }, [session]);
 
-  const cachedSigner = useLiveQuery(
-    async () => {
-      if (!session) { return; }
-      // @ts-ignore TODO:
-      const signerData = await getCachedSignerData(session.user.id);
-      return signerData;
-    }, [session, session?.user]);
+  const cachedSigner = useLiveQuery(async () => {
+    if (!session) {
+      return;
+    }
+    // @ts-ignore TODO
+    const signerData = await getCachedSignerData(session.user.id);
+    return signerData;
+  }, [session, session?.user]);
 
   // figure out if current user is the operator
   useEffect(() => {
@@ -60,7 +72,10 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       return;
     }
     const operatorUserId = cachedCommitmentPoolData?.operatorUserId;
-    if (!operatorUserId) { setIsOperator(false); return; }
+    if (!operatorUserId) {
+      setIsOperator(false);
+      return;
+    }
 
     // @ts-ignore TODO:
     if (session.user.id === operatorUserId) {
@@ -68,17 +83,33 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     }
   }, [setIsOperator, session, props.id, cachedCommitmentPoolData]);
 
+  console.log(alreadySigned);
+
   // figure out if this attestation has already been signed
   // only works for local signers (if you signed from the same device)
   useEffect(() => {
-    if (!cachedSigner || !cachedCommitmentPoolData) { return; }
-    if (cachedCommitmentPoolData.localSigners && cachedCommitmentPoolData.localSigners.length !== 0 &&
-      cachedCommitmentPoolData.localSigners.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
+    if (!cachedSigner || !cachedCommitmentPoolData) {
+      return;
+    }
+    if (
+      cachedCommitmentPoolData.localSigners &&
+      cachedCommitmentPoolData.localSigners.length !== 0 &&
+      cachedCommitmentPoolData.localSigners.filter(
+        (signer) => signer.publicKey === cachedSigner.publicKey
+      )
+    ) {
+      console.log("cached: ", cachedCommitmentPoolData);
       setAlreadySigned(true);
     } else {
       setAlreadySigned(false);
     }
-  }, [cachedCommitmentPoolData, cachedCommitmentPoolData?.localSigners, cachedSigner, props.id, setAlreadySigned]);
+  }, [
+    cachedCommitmentPoolData,
+    cachedCommitmentPoolData?.localSigners,
+    cachedSigner,
+    props.id,
+    setAlreadySigned,
+  ]);
 
   const refreshData = () => {
     router.replace(router.asPath);
@@ -88,6 +119,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     console.log('signAttestation', session, cachedSigner)
     try {
       setIsLoading(true);
+      console.log("session: ", session, " cached: ", cachedSigner);
       if (!session || !session.user || !cachedSigner?.privateKey) {
         toast({
           title: "Uh oh something went wrong, can you try again?",
@@ -117,7 +149,12 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       );
 
       const { proof, publicSignals } = await generateProof(circuitInput);
-      const res = await setSignature(proof, publicSignals, circuitInput.ciphertext, props.id);
+      const res = await setSignature(
+        proof,
+        publicSignals,
+        circuitInput.ciphertext,
+        props.id
+      );
       if (res.status === 200) {
         await refreshData();
         toast({
@@ -160,7 +197,9 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     },
     validationSchema: submitPrivateKeySchema,
     onSubmit: async (values) => {
-      if (!session) { return; }
+      if (!session) {
+        return;
+      }
       const privKey = values.privateKey;
       const derivedPubKey = await getPublicKeyFromPrivate(privKey);
       const res = await fetch(`/api/operator/${props.operatorId}`, {
@@ -171,15 +210,28 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       if (content.operator_key === derivedPubKey) {
         setIsOperator(true);
         // @ts-ignore TODO:
-        addOperatorDataToCache(props.id, content.operator_key, content.id, session.user.id, privKey);
+        addOperatorDataToCache(
+          props.id,
+          content.operator_key,
+          content.id,
+          session.user.id,
+          privKey
+        );
       }
     },
   });
 
   const startReveal = () => {
-    if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) { return; }
-    decryptCipherTexts(cachedCommitmentPoolData?.operatorPrivateKey, props.serializedPublicKeys, props.signatures, parseInt(props.id))
-  }
+    if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) {
+      return;
+    }
+    decryptCipherTexts(
+      cachedCommitmentPoolData?.operatorPrivateKey,
+      props.serializedPublicKeys,
+      props.signatures,
+      parseInt(props.id)
+    );
+  };
 
   return (
     <Box className={styles.container}>
@@ -200,54 +252,63 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             <Button disabled={!session} onClick={signAttestation}>
               Sign attestation
             </Button>
-          ) :
-            (<Button disabled>Already signed!</Button>)}
-          {(isOperator && props.signatures.length < props.threshold) &&
+          ) : (
+            <Button disabled>Already signed!</Button>
+          )}
+          {isOperator && props.signatures.length < props.threshold && (
             <Box background="orange.50" padding={4} borderRadius={8}>
-              <Text>Welcome back! You need to wait until the threshold has been reached to reveal. Come back later.
+              <Text>
+                Welcome back! You need to wait until the threshold has been
+                reached to reveal. Come back later.
               </Text>
-            </Box>}
-          {(isOperator && props.signatures.length >= props.threshold) &&
+            </Box>
+          )}
+          {isOperator && props.signatures.length >= props.threshold && (
             <VStack background="green.50" padding={4} borderRadius={8}>
-              <Text>Hi {session?.user?.name}, This commitment pool is ready for reveal.</Text>
+              <Text>
+                Hi {session?.user?.name}, This commitment pool is ready for
+                reveal.
+              </Text>
               <Button onClick={startReveal}>Reveal</Button>
-            </VStack>}
+            </VStack>
+          )}
           {isLoading && <Spinner />}
-          {!isOperator && <VStack background="gray.50" padding={4} borderRadius={8}>
-            <Text color="gray.600">
-              {`Are you the operator? Sorry, we didn't recognize you but if you have your key pair handy we can sign you back in as an operator.`}
-            </Text>
-            <form
-              onSubmit={submitPrivateKeyForm.handleSubmit}
-              style={{ width: "100%", maxWidth: "1000px" }}
-            >
-              <VStack
-                textAlign="start"
-                justifyContent="start"
-                alignContent="start"
+          {!isOperator && (
+            <VStack background="gray.50" padding={4} borderRadius={8}>
+              <Text color="gray.600">
+                {`Are you the operator? Sorry, we didn't recognize you but if you have your key pair handy we can sign you back in as an operator.`}
+              </Text>
+              <form
+                onSubmit={submitPrivateKeyForm.handleSubmit}
+                style={{ width: "100%", maxWidth: "1000px" }}
               >
-                {submitPrivateKeyForm.errors.privateKey && (
-                  <Text color="red.400">
-                    *{submitPrivateKeyForm.errors.privateKey}
-                  </Text>
-                )}
-                <HStack width="100%">
-                  <Input
-                    id="privateKey"
-                    name="privateKey"
-                    type="text"
-                    placeholder="private key (make sure to check the URL is zkpin.xyz, be careful where you share this)"
-                    onChange={submitPrivateKeyForm.handleChange}
-                    value={submitPrivateKeyForm.values.privateKey}
-                  />
-                  <Button type="submit" disabled={!session}>
-                    Submit
-                  </Button>
-                </HStack>
-              </VStack>
-            </form>
-          </VStack>
-          }
+                <VStack
+                  textAlign="start"
+                  justifyContent="start"
+                  alignContent="start"
+                >
+                  {submitPrivateKeyForm.errors.privateKey && (
+                    <Text color="red.400">
+                      *{submitPrivateKeyForm.errors.privateKey}
+                    </Text>
+                  )}
+                  <HStack width="100%">
+                    <Input
+                      id="privateKey"
+                      name="privateKey"
+                      type="text"
+                      placeholder="private key (make sure to check the URL is zkpin.xyz, be careful where you share this)"
+                      onChange={submitPrivateKeyForm.handleChange}
+                      value={submitPrivateKeyForm.values.privateKey}
+                    />
+                    <Button type="submit" disabled={!session}>
+                      Submit
+                    </Button>
+                  </HStack>
+                </VStack>
+              </form>
+            </VStack>
+          )}
         </VStack>
       </Box>
     </Box>
@@ -292,7 +353,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       commitment_poolId: pool?.id,
     },
     select: {
-      ciphertext: true
+      ciphertext: true,
     },
   });
 
@@ -309,11 +370,10 @@ export const getServerSideProps: GetServerSideProps = async ({
       props: {
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
-        signatures: signatures.map(() => ''),
+        signatures: signatures.map(() => ""),
       },
     };
   }
-
 };
 
 export default CommitmentPool;
