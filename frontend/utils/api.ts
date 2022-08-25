@@ -1,4 +1,3 @@
-import { Session } from "@prisma/client";
 import { Keypair } from "maci-domainobjs";
 import { serializePubKey } from "./crypto";
 import { addSignerDataToCache } from "./dexie";
@@ -12,6 +11,13 @@ export async function updateUserPublicKey(id: string, publicKey: string) {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
+  });
+}
+
+export async function getUserPublicKey(id: string) {
+  return fetch(`/api/getPubKey?id=${id}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
   });
 }
 
@@ -35,13 +41,27 @@ export async function setSignature(
   });
 }
 
+export async function revealCommitmentPool(
+  commitmentPoolId: string,
+  revealedSigners: string[]
+) {
+  const body = {
+    id: commitmentPoolId,
+    revealedSigners: revealedSigners,
+  };
+  return fetch(`/api/revealCommitmentPool`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
 // TODO: pass in a loading
 export const checkCachedSignerData = (
   cachedSigner: { publicKey: string; privateKey: any } | undefined, // TODO: fix type
   session: any,
   toast: any
 ) => {
-  console.log("checkCachedSignerData", cachedSigner, session);
   //TODO: hacky fix to use globalComittmentPool
   //TODO: make more secure or encrypt or ask to store offline
   if (session || !cachedSigner) {

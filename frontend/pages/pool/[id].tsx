@@ -12,7 +12,7 @@ import prisma from "@utils/prisma";
 import { CommitmentPoolProps, ProofInput } from "@utils/types";
 import { GetServerSideProps, NextPage } from "next";
 import styles from "@styles/Home.module.css";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -20,13 +20,11 @@ import {
   decryptCipherTexts,
   generateCircuitInputs,
   getPublicKeyFromPrivate,
-  serializePubKey,
 } from "@utils/crypto";
 import { generateProof } from "@utils/zkp";
 import {
-  checkCachedSignerData,
+  revealCommitmentPool,
   setSignature,
-  updateUserPublicKey,
 } from "@utils/api";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -34,7 +32,6 @@ import {
   getCachedSignerData,
   getCachedCommitmentPoolData,
   addSignerDataToCommitmentPoolInCache,
-  addSignerDataToCache,
 } from "@utils/dexie";
 import { useRouter } from "next/router";
 
@@ -45,8 +42,17 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [alreadySigned, setAlreadySigned] = useState(false);
 
+  // figure out if this is already revealed
+  const revealedSigners = useMemo(() => {
+    return props.revealedPublicKeys;
+  }, [props])
+
   const toast = useToast();
   const router = useRouter();
+
+  const refreshData = () => { // TODO: move to helper
+    router.replace(router.asPath);
+  };
 
   const cachedCommitmentPoolData = useLiveQuery(async () => {
     if (!session) {
@@ -72,7 +78,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       return;
     }
     const operatorUserId = cachedCommitmentPoolData?.operatorUserId;
-    console.log('operatorId and priv key', cachedCommitmentPoolData?.operatorId, cachedCommitmentPoolData?.operatorPrivateKey)
     // @ts-ignore TODO:
     if (!operatorUserId) {
       setIsOperator(false);
@@ -81,8 +86,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       setIsOperator(true);
     }
   }, [setIsOperator, session, props.id, cachedCommitmentPoolData]);
-
-  console.log('alreadySigned', alreadySigned);
 
   // figure out if this attestation has already been signed
   // only works for local signers (if you signed from the same device)
@@ -97,7 +100,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         (signer) => signer.publicKey === cachedSigner.publicKey
       )
     ) {
-      console.log("cached: ", cachedCommitmentPoolData);
       setAlreadySigned(true);
     } else {
       setAlreadySigned(false);
@@ -110,15 +112,9 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     setAlreadySigned,
   ]);
 
-  const refreshData = () => {
-    router.replace(router.asPath);
-  };
-
   const signAttestation = async () => {
-    console.log('signAttestation', session, cachedSigner);
     try {
       setIsLoading(true);
-      console.log("session: ", session, " cached: ", cachedSigner);
       if (!session || !session.user || !cachedSigner?.privateKey) {
         toast({
           title: "Uh oh something went wrong with your session, can you try again?",
@@ -221,19 +217,18 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     },
   });
 
-  const startReveal = () => {
-    console.log('start Reveal', !isOperator || !cachedCommitmentPoolData?.operatorPrivateKey,
-      isOperator,
-      cachedCommitmentPoolData?.operatorPrivateKey)
+  const startReveal = async () => {
     if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) {
       return;
     }
-    decryptCipherTexts(
+    const revealedSigners = await decryptCipherTexts(
       cachedCommitmentPoolData?.operatorPrivateKey,
       props.serializedPublicKeys,
       props.signatures,
       parseInt(props.id)
     );
+    revealCommitmentPool(props.id, revealedSigners);
+    refreshData();
   };
 
   return (
@@ -266,7 +261,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
               </Text>
             </Box>
           )}
-          {isOperator && props.signatures.length >= props.threshold && (
+          {isOperator && props.signatures.length >= props.threshold && revealedSigners.length === 0 && (
             <VStack background="green.50" padding={4} borderRadius={8}>
               <Text>
                 Hi {session?.user?.name}, This commitment pool is ready for
@@ -275,6 +270,24 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
               <Button onClick={startReveal}>Reveal</Button>
             </VStack>
           )}
+          {revealedSigners.length > 0 &&
+            <Box padding={4} background='gray.50' textAlign='center'>
+              <Text fontSize={20} fontWeight='bold'>Revealed Signers</Text>
+              {revealedSigners?.map((signer, idx) => {
+                return <VStack key={idx} width='100%'>
+                  <Text>
+                    {signer.name}
+                  </Text>
+                  <Text>
+                    {signer.id}
+                  </Text>
+                  <Text>
+                    {signer.serializedPublicKey}
+                  </Text>
+                </VStack>
+              })}
+            </Box>
+          }
           {isLoading && <Spinner />}
           {!isOperator && (
             <VStack background="gray.50" padding={4} borderRadius={8}>
@@ -337,6 +350,13 @@ export const getServerSideProps: GetServerSideProps = async ({
           operator_key: true,
         },
       },
+      revealedPublicKeys: {
+        select: {
+          name: true,
+          serializedPublicKey: true,
+          id: true,
+        }
+      }
     },
   });
 

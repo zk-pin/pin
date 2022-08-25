@@ -217,10 +217,10 @@ export const decryptCipherTexts = (
   );
   console.log("newPair rawPubKey", newPair.pubKey.rawPubKey);
   const operatorPrivateKey = new PrivKey(BigInt(operatorPrivateKeyString));
-  const decryptedCipherTexts: string[] = [];
+  const revealedSigners: string[] = [];
   const serializedPublicKeySet = new Set(serializedPublicKeys);
 
-  signatures.forEach((signature, idx) => {
+  signatures.forEach((signature) => {
     const cipherText = {
       iv: BigInt(signature.ciphertext[0]),
       data: signature.ciphertext.slice(1).map((cp) => BigInt(cp)),
@@ -234,14 +234,13 @@ export const decryptCipherTexts = (
       );
 
       const decryptAttempt = decrypt(cipherText, sharedSecret);
-      console.log("decryptAttempt", decryptAttempt);
       if (Number(decryptAttempt[0]) === commitmentPoolId) {
-        //TODO
-        console.log("decryptAttempt", decryptAttempt);
+        revealedSigners.push(serializedPubKey);
+        serializedPublicKeySet.delete(serializedPubKey);
       }
     });
   });
-  return decryptedCipherTexts;
+  return revealedSigners;
 };
 
 const prepareInputs = async (

@@ -1,4 +1,3 @@
-import fs from "fs";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { VKeyRespData } from "../../utils/types";
 
@@ -8,7 +7,7 @@ export default async function getPubKey(
   res: NextApiResponse<VKeyRespData | any>
 ) {
   try {
-    const { id, publicKey } = req.body;
+    const { id } = req.query;
     const user = await prisma.user.findUnique({
       where: {
         id: id,

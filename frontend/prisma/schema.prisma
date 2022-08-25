@@ -8,14 +8,15 @@ datasource db {
 }
 
 model CommitmentPool {
-  id          Int         @id @unique @default(autoincrement())
-  title       String
-  description String?
-  created_at  DateTime    @default(now()) @db.Timestamptz(6)
-  operatorId  Int         @unique
-  threshold   Int
-  operator    Operator    @relation(fields: [operatorId], references: [id])
-  signatures  Signature[]
+  id                 Int         @id @unique @default(autoincrement())
+  title              String
+  description        String?
+  created_at         DateTime    @default(now()) @db.Timestamptz(6)
+  operatorId         Int         @unique
+  threshold          Int
+  operator           Operator    @relation(fields: [operatorId], references: [id])
+  signatures         Signature[]
+  revealedPublicKeys User[]
 }
 
 model Operator {
@@ -71,15 +72,17 @@ model Session {
 }
 
 model User {
-  id                  String    @id @default(cuid())
-  serializedPublicKey String?   @unique
+  id                  String          @id @default(cuid())
+  serializedPublicKey String?         @unique
   name                String?
   username            String?
-  email               String?   @unique
-  emailVerified       DateTime? @map("email_verified")
+  email               String?         @unique
+  emailVerified       DateTime?       @map("email_verified")
   image               String?
   accounts            Account[]
   sessions            Session[]
+  CommitmentPool      CommitmentPool? @relation(fields: [commitmentPoolId], references: [id])
+  commitmentPoolId    Int?
 
   @@map("users")
 }

@@ -79,8 +79,6 @@ export async function getCachedSignerData(userId: string) {
     let signers = await cache.signers.get({
       userId: userId,
     });
-    console.log("signers: ", signers);
-
     return signers;
   } catch (error) {
     console.log(`Failed to get ${userId}: ${error}`);

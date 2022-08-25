@@ -36,8 +36,6 @@ export const NavBar = () => {
     //   console.log('loadingCachedSigned', loadingCachedSigned)
     //   return;
     // }
-    console.log('get out of loadingCachedSigned', loadingCachedSigned)
-
     if (session) {
       checkCachedSignerData(cachedSigner, session, toast);
     }
