@@ -53,8 +53,11 @@ const Home: NextPage<Props> = ({ pools }) => {
           //@ts-ignore TODO:
           addSignerDataToCache(session.user.id, pubKey, privKey);
         } else if (res.status === 409) {
-          //@ts-ignore TODO:
-          addSignerDataToCache(session.user.id, res.publicKey, '');
+          res.json().then((body) => {
+            console.log('status 409, sync server pubkey', body.publicKey)
+            //@ts-ignore TODO:
+            addSignerDataToCache(session.user.id, body.publicKey, '');
+          })
         }
       });
     }

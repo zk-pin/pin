@@ -103,6 +103,11 @@ export async function addSignerDataToCache(
         privateKey: privKey,
         publicKey: pubKey,
       });
+    } else {
+      await cache.signers
+        .where("userId")
+        .equals(userId)
+        .modify({ publicKey: pubKey });
     }
   } catch (error) {
     console.log(`Failed to add ${userId} to signers list s: ${error}`);

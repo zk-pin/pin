@@ -228,6 +228,7 @@ export const decryptCipherTexts = (
       const decryptAttempt = decrypt(cipherText, sharedSecret);
       if (Number(decryptAttempt[0]) === commitmentPoolId) {
         //TODO
+        console.log("decryptAttempt", decryptAttempt);
       }
     });
   });
@@ -276,6 +277,7 @@ export async function testCircuit() {
     ciphertext,
     Keypair.genEcdhSharedKey(operator.privKey, signer.pubKey)
   );
+
   console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
 
   const res = await prepareInputs(
