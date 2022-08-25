@@ -43,8 +43,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const [alreadySigned, setAlreadySigned] = useState(false);
 
   // figure out if this is already revealed
-  const revealedSigners = useMemo(() => {
-    return props.revealedSigners;
+  const revealedPublicKeys = useMemo(() => {
+    return props.revealedPublicKeys;
   }, [props])
 
   const toast = useToast();
@@ -227,7 +227,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       props.signatures,
       parseInt(props.id)
     );
-    const revealed = await revealCommitmentPool(props.id, revealedSigners);
+    await revealCommitmentPool(props.id, revealedSigners);
     refreshData();
   };
 
@@ -242,9 +242,9 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             Created at: {new Date(Date.parse(props.created_at)).toDateString()}{" "}
             {new Date(Date.parse(props.created_at)).toLocaleTimeString()}{" "}
           </Text>
-          <Text>
+          {(!revealedPublicKeys || revealedPublicKeys.length === 0) && <Text>
             {props.signatures.length || 0}/{props.threshold} signatures
-          </Text>
+          </Text>}
           {!session && <Text color="gray.600">Please sign in to attest</Text>}
           {!alreadySigned ? (
             <Button disabled={!session} onClick={signAttestation}>
@@ -253,18 +253,17 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
           ) : (
             <Button disabled>Already signed!</Button>
           )}
-          {isOperator && props.signatures.length < props.threshold && (
+          {isOperator && revealedPublicKeys && revealedPublicKeys.length === 0 && props.signatures.length < props.threshold && (
             <WaitForThreshold />
-
           )}
-          {isOperator && props.signatures.length >= props.threshold && revealedSigners.length === 0 && (
+          {isOperator && props.signatures.length >= props.threshold && revealedPublicKeys && revealedPublicKeys.length === 0 && (
             <ReadyForReveal startReveal={startReveal} />
           )}
-          {revealedSigners.length > 0 &&
-            <RevealedSignersList revealedSigners={revealedSigners} />
+          {revealedPublicKeys?.length > 0 &&
+            <RevealedSignersList revealedSigners={revealedPublicKeys} />
           }
           {isLoading && <Spinner />}
-          {!isOperator && revealedSigners.length === 0 && (
+          {!isOperator && !revealedPublicKeys && (
             <OperatorPrivateInput submitPrivateKeyForm={submitPrivateKeyForm} />
           )}
         </VStack>

@@ -7,7 +7,7 @@ export type CommitmentPoolProps = {
   description?: string;
   threshold: number;
   signatures: any[];
-  revealedSigners: IRevealedSigners[];
+  revealedPublicKeys: IRevealedSigners[];
   serializedPublicKeys: string[];
 };
 
