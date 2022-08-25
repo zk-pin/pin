@@ -32,9 +32,7 @@ const Home: NextPage<Props> = ({ pools }) => {
       return;
     }
     // @ts-ignore TODO:
-    const signerData = await getCachedSignerData(
-      sha256(session.user.id).toString()
-    );
+    const signerData = await getCachedSignerData(session.user.id);
     return signerData;
   }, [session]);
 
@@ -47,11 +45,10 @@ const Home: NextPage<Props> = ({ pools }) => {
     //TODO: make more secure or encrypt or ask to store offline
     if (session?.user && !cachedSigner?.privateKey) {
       const newPair = new Keypair();
-
       const pubKey = serializePubKey(newPair);
       const privKey = newPair.privKey.rawPrivKey.toString();
       // @ts-ignore TODO:
-      addSignerDataToCache(sha256(session.user.id).toString(), pubKey, privKey);
+      addSignerDataToCache(session.user.id, pubKey, privKey);
 
       // @ts-ignore TODO:
       updateUserPublicKey(session.user.id, pubKey);

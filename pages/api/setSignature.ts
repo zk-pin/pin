@@ -1,9 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import prisma from "@utils/prisma";
 
-<<<<<<< HEAD
-//PUT /api/setSignature
-=======
 const pinataSDK = require("@pinata/sdk");
 const pinata = pinataSDK(
   process.env.PINATA_API_KEY,
@@ -11,7 +8,6 @@ const pinata = pinataSDK(
 );
 
 //PUT /api/setPubKey
->>>>>>> cc07396 (feat(wip): more wip)
 export default async function setSignature(
   req: NextApiRequest,
   res: NextApiResponse<any>
