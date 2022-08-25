@@ -54,7 +54,7 @@ const CreatePool: NextPage = ({ }) => {
     initialValues: {
       title: "",
       description: "",
-      threshold: 10,
+      threshold: 2,
     },
     validationSchema: createPoolSchema,
     onSubmit: (values) => {
