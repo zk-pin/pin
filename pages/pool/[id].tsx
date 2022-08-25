@@ -50,7 +50,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     if (!session) {
       return;
     }
-    console.log(cachedSigner);
     const operatorData = await getCachedCommitmentPoolData(props.id);
     return operatorData;
   }, [session]);
@@ -90,6 +89,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     if (!cachedSigner || !cachedCommitmentPoolData) {
       return;
     }
+    console.log(cachedCommitmentPoolData.signers, cachedSigner);
     if (
       cachedCommitmentPoolData.signers.length !== 0 &&
       cachedCommitmentPoolData.signers.filter(
@@ -152,8 +152,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         serializedPublicKeys,
         Number(props.id)
       );
-
-      // console.log(JSON.stringify(circuitInput)); // TODO: remove
 
       const { proof, publicSignals } = await generateProof(circuitInput);
       setSignature(proof, publicSignals, circuitInput.ciphertext, props.id);
