@@ -1,6 +1,7 @@
 import fs from "fs";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { VKeyRespData } from "../../utils/types";
+import prisma from "@utils/prisma";
 
 //PUT /api/setPubKey
 export default async function setPubKey(
@@ -19,7 +20,7 @@ export default async function setPubKey(
     });
 
     // only set a serializedPublicKey if the user hasn't already been assigned one
-    if (!user.serializedPublicKey) {
+    if (!user || !user.serializedPublicKey) {
       await prisma.user.update({
         where: {
           id: id,

@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  Spinner,
-  Text,
-  useToast,
-  VStack,
-} from "@chakra-ui/react";
+import { Box, Button, Spinner, Text, useToast, VStack } from "@chakra-ui/react";
 import prisma from "@utils/prisma";
 import { CommitmentPoolProps, ProofInput } from "@utils/types";
 import { GetServerSideProps, NextPage } from "next";
@@ -20,10 +13,7 @@ import {
   getPublicKeyFromPrivate,
 } from "@utils/crypto";
 import { generateProof } from "@utils/zkp";
-import {
-  revealCommitmentPool,
-  setSignature,
-} from "@utils/api";
+import { addRevealedSigner, revealCommitmentPool, setSignature } from "@utils/api";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   addOperatorDataToCache,
@@ -33,7 +23,12 @@ import {
 } from "@utils/dexie";
 import { useRouter } from "next/router";
 import { RevealedSignersList } from "@components/RevealedSignersList";
-import { OperatorPrivateInput, ReadyForReveal, WaitForThreshold } from "@components/OperatorComponents";
+import {
+  OperatorPrivateInput,
+  ReadyForReveal,
+  WaitForThreshold,
+} from "@components/OperatorComponents";
+import axios from "axios";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const { data: session } = useSession();
@@ -50,7 +45,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const toast = useToast();
   const router = useRouter();
 
-  const refreshData = () => { // TODO: move to helper
+  const refreshData = () => {
+    // TODO: move to helper
     router.replace(router.asPath);
   };
 
@@ -117,7 +113,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       setIsLoading(true);
       if (!session || !session.user || !cachedSigner?.privateKey) {
         toast({
-          title: "Uh oh something went wrong with your session, can you try again?",
+          title:
+            "Uh oh something went wrong with your session, can you try again?",
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -125,50 +122,70 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         setIsLoading(false);
         return;
       }
-      //get signer private key
-      const privKey = cachedSigner.privateKey;
-      const serializedOpPubKey = props.operator.operator_key;
-      const serializedPublicKeys: string[] = props.serializedPublicKeys;
 
-      if (!privKey || serializedPublicKeys?.find((key) => !key)) {
+      //if revealed
+      if (revealedPublicKeys.length !== 0) {
+        // @ts-ignore TODO:
+        const addSignerRes = await addRevealedSigner(props.id, revealedPublicKeys, session.user.id);
         setIsLoading(false);
-        return;
-      }
-
-      const circuitInput: ProofInput = await generateCircuitInputs(
-        serializedOpPubKey,
-        privKey,
-        serializedPublicKeys,
-        Number(props.id)
-      );
-
-      const { proof, publicSignals } = await generateProof(circuitInput);
-      const res = await setSignature(
-        proof,
-        publicSignals,
-        circuitInput.ciphertext,
-        props.id
-      );
-      if (res.status === 200) {
-        await refreshData();
-        toast({
-          title: "Successfully signed and generated proof.",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-        addSignerDataToCommitmentPoolInCache(props.id, cachedSigner.publicKey);
+        if (addSignerRes.status !== 200) {
+          addSignerRes.json().then((body) => {
+            throw new Error(
+              `Error occurred adding signer to revealed signers: ${body}`
+            );
+          })
+        } else {
+          await refreshData();
+        }
       } else {
-        res.json().then((body) => {
+        //get signer private key
+        const privKey = cachedSigner.privateKey;
+        const serializedOpPubKey = props.operator.operator_key;
+        const serializedPublicKeys: string[] = props.serializedPublicKeys;
+
+        if (!privKey || serializedPublicKeys?.find((key) => !key)) {
+          setIsLoading(false);
+          return;
+        }
+
+        const circuitInput: ProofInput = await generateCircuitInputs(
+          serializedOpPubKey,
+          privKey,
+          serializedPublicKeys,
+          Number(props.id)
+        );
+
+        const { proof, publicSignals } = await generateProof(circuitInput);
+        const res = await setSignature(
+          proof,
+          publicSignals,
+          circuitInput.ciphertext,
+          props.id
+        );
+        if (res.status === 200) {
+          await refreshData();
           toast({
-            title: "Error: " + body.msg,
-            status: "warning",
+            title: "Successfully signed and generated proof.",
+            status: "success",
             duration: 3000,
             isClosable: true,
           });
-        })
+          addSignerDataToCommitmentPoolInCache(
+            props.id,
+            cachedSigner.publicKey
+          );
+        } else {
+          res.json().then((body) => {
+            toast({
+              title: "Error: " + body.msg,
+              status: "warning",
+              duration: 3000,
+              isClosable: true,
+            });
+          });
+        }
+        setIsLoading(false);
       }
-      setIsLoading(false);
     } catch (err: unknown) {
       console.error(err);
       toast({
@@ -296,10 +313,12 @@ export const getServerSideProps: GetServerSideProps = async ({
           name: true,
           serializedPublicKey: true,
           id: true,
-        }
-      }
+        },
+      },
     },
   });
+
+  console.log("pool: ", pool);
 
   // global public keys
   const sybilAddresses = {

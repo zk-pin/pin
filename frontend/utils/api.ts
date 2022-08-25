@@ -1,6 +1,8 @@
 import { Keypair } from "maci-domainobjs";
+import CommitmentPool from "pages/pool/[id]";
 import { serializePubKey } from "./crypto";
 import { addSignerDataToCache } from "./dexie";
+import { IRevealedSigners } from "./types";
 
 export async function updateUserPublicKey(id: string, publicKey: string) {
   const body = {
@@ -142,4 +144,24 @@ export const checkCachedSignerData = (
       isClosable: true,
     });
   }
+};
+
+export const addRevealedSigner = async (
+  commitmentPoolId: string,
+  revealedPublicKeys: IRevealedSigners[],
+  userId: string
+) => {
+  const body = {
+    newRevealedSigners: [
+      ...revealedPublicKeys.map((el) => el.id),
+      // @ts-ignore TODO:
+      userId,
+    ],
+    commitmentPoolId: commitmentPoolId,
+  };
+  return await fetch(`/api/addRevealedSigner`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
 };
