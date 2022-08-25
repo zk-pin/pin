@@ -33,7 +33,6 @@ import {
   addSignerDataToCommitmentPoolInCache,
   addSignerDataToCache,
 } from "@utils/dexie";
-import sha256 from "crypto-js/sha256";
 import { useRouter } from "next/router";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
@@ -69,14 +68,14 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       setIsOperator(false);
       return;
     }
-    const operatorUserId = cachedCommitmentPoolData?.hashedOperatorUserId;
+    const operatorUserId = cachedCommitmentPoolData?.operatorUserId;
     if (!operatorUserId) {
       setIsOperator(false);
       return;
     }
 
     // @ts-ignore TODO:
-    if (sha256(session.user.id).toString() === operatorUserId) {
+    if (session.user.id === operatorUserId) {
       setIsOperator(true);
     }
   }, [setIsOperator, session, props.id, cachedCommitmentPoolData]);
@@ -86,7 +85,12 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     if (!cachedSigner || !cachedCommitmentPoolData) {
       return;
     }
-    console.log(cachedCommitmentPoolData.signers, cachedSigner);
+    console.log(
+      "alreadySigned?",
+      cachedSigner?.publicKey,
+      cachedCommitmentPoolData?.signers
+    );
+
     if (
       cachedCommitmentPoolData.signers.length !== 0 &&
       cachedCommitmentPoolData.signers.filter(
@@ -158,7 +162,12 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       );
 
       const { proof, publicSignals } = await generateProof(circuitInput);
-      setSignature(proof, publicSignals, circuitInput.ciphertext, props.id);
+      await setSignature(
+        proof,
+        publicSignals,
+        circuitInput.ciphertext,
+        props.id
+      );
       await refreshData();
       toast({
         title: "Successfully signed and generated proof.",
@@ -169,6 +178,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       addSignerDataToCommitmentPoolInCache(props.id, cachedSigner.publicKey);
       setIsLoading(false);
     } catch (err: unknown) {
+      console.error(err);
       toast({
         title: "Uh oh something went wrong",
         status: "error",
@@ -208,7 +218,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
           props.id,
           content.operator_key,
           content.id,
-          session.user.id
+          session.user.id,
+          privKey
         );
       }
     },
@@ -325,6 +336,7 @@ export const getServerSideProps: GetServerSideProps = async ({
     },
   });
 
+  // global public keys
   const sybilAddresses = {
     serializedPublicKeys: (
       await prisma.user.findMany({
@@ -339,15 +351,28 @@ export const getServerSideProps: GetServerSideProps = async ({
     where: {
       commitment_poolId: pool?.id,
     },
+    select: {
+      ciphertext: true,
+    },
   });
 
-  return {
-    props: {
-      ...JSON.parse(JSON.stringify(pool)),
-      ...JSON.parse(JSON.stringify(sybilAddresses)),
-      signatures: JSON.parse(JSON.stringify(signatures)),
-    },
-  };
+  if (signatures.length >= (pool?.threshold || 0)) {
+    return {
+      props: {
+        ...JSON.parse(JSON.stringify(pool)),
+        ...JSON.parse(JSON.stringify(sybilAddresses)),
+        signatures: signatures.map(() => ""),
+      },
+    };
+  } else {
+    return {
+      props: {
+        ...JSON.parse(JSON.stringify(pool)),
+        ...JSON.parse(JSON.stringify(sybilAddresses)),
+        signatures: JSON.parse(JSON.stringify(signatures)),
+      },
+    };
+  }
 };
 
 export default CommitmentPool;

@@ -13,15 +13,12 @@ export default async function setSignature(
   res: NextApiResponse<any>
 ) {
   try {
-<<<<<<< HEAD
-    const { commitmentPoolId, proof, publicSignals, ciphertext } = req.body;
-=======
     const { committmentPoolId, proof, publicSignals, ciphertext } = req.body;
     const options = {
       pinataMetadata: {
         name: "ZKPin",
         keyvalues: {
-          committmentPoolId: committmentPoolId,
+          committmentPoolId: committmentPoolId.toString(),
         },
       },
       pinataOptions: {
@@ -29,22 +26,23 @@ export default async function setSignature(
       },
     };
 
-    await pinata.pinJSONToIPFS({
-      proof,
-    });
->>>>>>> cc07396 (feat(wip): more wip)
+    const res = await pinata.pinJSONToIPFS(
+      {
+        proof,
+        publicSignals,
+      },
+      options
+    );
+
+    console.log("ipfs: ", res);
+
     await prisma.signature.create({
       data: {
         proof,
         publicSignals,
         ciphertext,
-<<<<<<< HEAD
-        commitment_pool: {
-          connect: { id: commitmentPoolId },
-=======
         commitment_poolId: {
           connect: [{ id: committmentPoolId }],
->>>>>>> cc07396 (feat(wip): more wip)
         },
       },
     });

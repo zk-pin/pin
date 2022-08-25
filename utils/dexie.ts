@@ -7,7 +7,7 @@ export async function addOperatorDataToCache(
   commitmentPoolId: string,
   operatorPublicKey: string,
   operatorId: string,
-  hashedOperatorUserId: string,
+  operatorUserId: string,
   operatorPrivateKey?: string
 ) {
   try {
@@ -20,7 +20,7 @@ export async function addOperatorDataToCache(
         commitmentPoolId: commitmentPoolId,
         operatorPublicKey: operatorPublicKey,
         operatorId: operatorId,
-        hashedOperatorUserId: hashedOperatorUserId,
+        operatorUserId: operatorUserId,
         operatorPrivateKey: operatorPrivateKey,
         signers: [],
       });
