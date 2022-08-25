@@ -1,6 +1,7 @@
 import fs from "fs";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { VKeyRespData } from "../../utils/types";
+import prisma from "@utils/prisma";
 
 //PUT /api/setPubKey
 export default async function setPubKey(
