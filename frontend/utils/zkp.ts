@@ -37,7 +37,7 @@ export function createMerkleTree(
   currPublicKey: BigInt[],
   leafPublicKeys: BigInt[][]
 ) {
-  console.log("formatted: ", formatPubKey(currPublicKey));
+  console.log("formatted: ", hashBigIntArr(currPublicKey));
   // console.log("currPublicKey: ", currPublicKey);
   // console.log("leafPublicKeys: ", leafPublicKeys);
   //Yes the @ts-ignores are not ideal but unfortunately they're necessary because
@@ -45,9 +45,9 @@ export function createMerkleTree(
   //@ts-ignore
   const formattedHashedAddrs: bigint[] = [];
   for (const pubKey of leafPublicKeys) {
-    formattedHashedAddrs.push(formatPubKey(pubKey));
+    formattedHashedAddrs.push(hashBigIntArr(pubKey));
   }
-  const formattedLeafPubKey = formatPubKey(currPublicKey);
+  const formattedLeafPubKey = hashBigIntArr(currPublicKey);
   formattedHashedAddrs.push(formattedLeafPubKey);
 
   const tree = new MerkleTree(
@@ -107,7 +107,7 @@ export const formatPubKeyHex = (hexPubKey: string) => {
 };
 
 //given hex public key or BigInt[2], computes similar-style hash to circom equivalent
-export const formatPubKey = (pubKey: BigInt[]) => {
+export const hashBigIntArr = (pubKey: BigInt[]) => {
   //@ts-ignore
   return BigInt(mimcSponge(pubKey, 1, 220, 123)[0].toString());
 };

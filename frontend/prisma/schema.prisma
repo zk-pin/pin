@@ -10,12 +10,23 @@ datasource db {
 model CommitmentPool {
   id          Int         @id @unique @default(autoincrement())
   title       String
+<<<<<<< HEAD
+  description String? // optional description
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  operator   Operator @relation(fields: [operatorId], references: [id])
+  operatorId Int      @unique
+  threshold  Int // set by the operator (size after which everything is publicly revealed)
+
+  signatures    Signature[]
+=======
   description String?
   created_at  DateTime    @default(now()) @db.Timestamptz(6)
   operatorId  Int         @unique
   threshold   Int
   operator    Operator    @relation(fields: [operatorId], references: [id])
   signatures  Signature[]
+>>>>>>> bf5535ecf2ab4deb3f4d7465876c7256b17ca90d
 }
 
 model Operator {
@@ -24,15 +35,27 @@ model Operator {
   commitment_pool CommitmentPool?
 }
 
+model Ipfs {
+  id Int @id @unique @default(autoincrement())
+  ipfsHash String
+  pinSize Int
+  timestamp String
+  signature Signature?
+}
+
 model Signature {
   id                Int            @id @default(autoincrement())
   ciphertext        String[]
-  ipfsId            Int            @unique
+  ipfs Ipfs @relation(fields: [ipfsId], references: [id])
+  ipfsId Int @unique
+  commitment_pool   CommitmentPool @relation(fields: [commitment_poolId], references: [id])
   commitment_poolId Int
   commitment_pool   CommitmentPool @relation(fields: [commitment_poolId], references: [id])
   Ipfs              Ipfs           @relation(fields: [ipfsId], references: [id])
 }
 
+
+// for OAuth
 model Account {
   id                String  @id @default(cuid())
   userId            String  @map("user_id")
