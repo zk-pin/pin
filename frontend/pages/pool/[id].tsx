@@ -227,21 +227,16 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   });
 
   const startReveal = () => {
-<<<<<<< HEAD
     if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) {
       return;
     }
     decryptCipherTexts(
       cachedCommitmentPoolData?.operatorPrivateKey,
       props.serializedPublicKeys,
-      props.signatures
+      props.signatures,
+      parseInt(props.id)
     );
   };
-=======
-    if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) { return; }
-    decryptCipherTexts(cachedCommitmentPoolData?.operatorPrivateKey, props.serializedPublicKeys, props.signatures, parseInt(props.id))
-  }
->>>>>>> bf5535ecf2ab4deb3f4d7465876c7256b17ca90d
 
   return (
     <Box className={styles.container}>
