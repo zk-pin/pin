@@ -3,7 +3,7 @@ export async function updateUserPublicKey(id: string, publicKey: string) {
     id,
     publicKey,
   };
-  fetch(`/api/setPubKey`, {
+  return fetch(`/api/setPubKey`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -23,7 +23,7 @@ export async function setSignature(
     commitmentPoolId,
   };
 
-  fetch(`/api/setSignature`, {
+  return fetch(`/api/setSignature`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

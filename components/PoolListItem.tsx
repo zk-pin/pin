@@ -7,7 +7,6 @@ type Props = {
 }
 
 export const PoolListItem = ({ pool }: Props) => {
-  console.log(pool)
   return (
     <Link href={`pool/${pool.id}`}>
       <Box as="button" width={'100%'} border='0.5px' borderRadius={8} padding={4} background={'gray.50'} _hover={{ background: 'gray.100' }}>

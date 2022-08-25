@@ -72,7 +72,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   // figure out if this attestation has already been signed
   // only works for local signers (if you signed from the same device)
   useEffect(() => {
-    console.log('alreadySigned?', cachedSigner?.publicKey, cachedCommitmentPoolData?.localSigners)
     if (!cachedSigner || !cachedCommitmentPoolData) { return; }
     if (cachedCommitmentPoolData.localSigners.length !== 0 &&
       cachedCommitmentPoolData.localSigners.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
@@ -133,11 +132,19 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       );
 
       const { proof, publicSignals } = await generateProof(circuitInput);
-      await setSignature(proof, publicSignals, circuitInput.ciphertext, props.id);
-      await refreshData();
+      const res = await setSignature(proof, publicSignals, circuitInput.ciphertext, props.id);
+      if (res.status === 200) {
+        await refreshData();
+        toast({
+          title: "Successfully signed and generated proof.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
       toast({
-        title: "Successfully signed and generated proof.",
-        status: "success",
+        title: "Looks like you've already signed before",
+        status: "warning",
         duration: 3000,
         isClosable: true,
       });
