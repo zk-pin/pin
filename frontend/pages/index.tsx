@@ -52,6 +52,9 @@ const Home: NextPage<Props> = ({ pools }) => {
         if (res.status === 200) {
           //@ts-ignore TODO:
           addSignerDataToCache(session.user.id, pubKey, privKey);
+        } else if (res.status === 409) {
+          //@ts-ignore TODO:
+          addSignerDataToCache(session.user.id, res.publicKey, '');
         }
       });
     }

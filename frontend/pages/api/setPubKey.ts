@@ -30,7 +30,12 @@ export default async function setPubKey(
       });
       res.status(200).json({ success: true });
     } else {
-      res.status(200).json({ success: true, msg: "already set a public key" });
+      res.status(409).json({
+        // status conflict
+        success: true,
+        msg: "already set a public key",
+        publicKey: user.serializedPublicKey,
+      });
     }
   } catch (ex: unknown) {
     console.error(ex);
