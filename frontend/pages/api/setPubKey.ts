@@ -9,16 +9,27 @@ export default async function setPubKey(
 ) {
   try {
     const { id, publicKey } = req.body;
-    await prisma.user.update({
+    const user = await prisma.user.findMany({
       where: {
         id: id,
       },
-      data: {
-        serializedPublicKey: publicKey,
+      select: {
+        serializedPublicKey: true,
       },
     });
-
-    res.status(200).json({ success: true });
+    if (user.serializedPublicKey === "") {
+      await prisma.user.update({
+        where: {
+          id: id,
+        },
+        data: {
+          serializedPublicKey: publicKey,
+        },
+      });
+      res.status(200).json({ success: true });
+    } else {
+      res.status(200).json({ success: true, msg: "already set a public key" });
+    }
   } catch (ex: unknown) {
     console.error(ex);
     res.status(404).json({ msg: "Unexpected error occurred" });

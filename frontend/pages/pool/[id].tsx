@@ -73,7 +73,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   // only works for local signers (if you signed from the same device)
   useEffect(() => {
     if (!cachedSigner || !cachedCommitmentPoolData) { return; }
-    if (cachedCommitmentPoolData.localSigners.length !== 0 &&
+    if (cachedCommitmentPoolData.localSigners && cachedCommitmentPoolData.localSigners.length !== 0 &&
       cachedCommitmentPoolData.localSigners.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
       setAlreadySigned(true);
     } else {
@@ -88,11 +88,15 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       session?.user && !cachedSigner?.privateKey
     ) {
       const newPair = new Keypair();
+      const pubKey = serializePubKey(newPair);
+      const privKey = newPair.privKey.rawPrivKey.toString();
       //@ts-ignore TODO:
-      addSignerDataToCache(session.user.id, serializePubKey(newPair), newPair.privKey.rawPrivKey.toString());
-
-      //@ts-ignore TODO:
-      updateUserPublicKey(session.user.id, serializePubKey(newPair));
+      updateUserPublicKey(session.user.id, pubKey).then((res) => {
+        if (res.status === 200) {
+          //@ts-ignore TODO:
+          addSignerDataToCache(session.user.id, pubKey, privKey);
+        }
+      });
     }
   }, [cachedSigner, cachedSigner?.privateKey, session]);
 

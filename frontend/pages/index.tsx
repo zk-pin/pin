@@ -47,11 +47,13 @@ const Home: NextPage<Props> = ({ pools }) => {
       const newPair = new Keypair();
       const pubKey = serializePubKey(newPair);
       const privKey = newPair.privKey.rawPrivKey.toString();
-      // @ts-ignore TODO:
-      addSignerDataToCache(session.user.id, pubKey, privKey);
-
-      // @ts-ignore TODO:
-      updateUserPublicKey(session.user.id, pubKey);
+      //@ts-ignore TODO:
+      updateUserPublicKey(session.user.id, pubKey).then((res) => {
+        if (res.status === 200) {
+          //@ts-ignore TODO:
+          addSignerDataToCache(session.user.id, pubKey, privKey);
+        }
+      });
     }
   }, [cachedSigner?.privateKey, session]);
 
