@@ -33,7 +33,10 @@ const CreatePool: NextPage = ({ }) => {
   );
   const [loading, setLoading] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
-  const { hasCopied, onCopy } = useClipboard(
+  const { hasCopied: hasCopiedPub, onCopy: onCopyPub } = useClipboard(
+    (keyPair && keyPair.privateKey) || ""
+  );
+  const { hasCopied: hasCopiedPriv, onCopy: onCopyPriv } = useClipboard(
     (keyPair && keyPair.privateKey) || ""
   );
 
@@ -206,7 +209,7 @@ const CreatePool: NextPage = ({ }) => {
                       isReadOnly
                       placeholder="Welcome"
                     />
-                    {hasCopied ? (
+                    {hasCopiedPub ? (
                       <IconButton
                         aria-label={"completed copy button"}
                         ml={2}
@@ -214,7 +217,7 @@ const CreatePool: NextPage = ({ }) => {
                       />
                     ) : (
                       <IconButton
-                        onClick={onCopy}
+                        onClick={onCopyPub}
                         ml={2}
                         aria-label={"copy icon button"}
                         icon={<CopyIcon />}
@@ -228,7 +231,7 @@ const CreatePool: NextPage = ({ }) => {
                       isReadOnly
                       placeholder="Welcome"
                     />
-                    {hasCopied ? (
+                    {hasCopiedPriv ? (
                       <IconButton
                         aria-label={"completed copy button"}
                         ml={2}
@@ -236,7 +239,7 @@ const CreatePool: NextPage = ({ }) => {
                       />
                     ) : (
                       <IconButton
-                        onClick={onCopy}
+                        onClick={onCopyPriv}
                         ml={2}
                         aria-label={"copy icon button"}
                         icon={<CopyIcon />}
