@@ -83,43 +83,15 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   // figure out if this attestation has already been signed
   // only works for local signers (if you signed from the same device)
   useEffect(() => {
-<<<<<<< HEAD
-    if (!cachedSigner || !cachedCommitmentPoolData) {
-      return;
-    }
-    console.log(
-      "alreadySigned?",
-      cachedSigner?.publicKey,
-      cachedCommitmentPoolData?.signers
-    );
-
-    if (
-      cachedCommitmentPoolData.signers.length !== 0 &&
-      cachedCommitmentPoolData.signers.filter(
-        (signer) => signer.publicKey === cachedSigner.publicKey
-      )
-    ) {
-=======
     console.log('alreadySigned?', cachedSigner?.publicKey, cachedCommitmentPoolData?.localSigners)
     if (!cachedSigner || !cachedCommitmentPoolData) { return; }
     if (cachedCommitmentPoolData.localSigners.length !== 0 &&
       cachedCommitmentPoolData.localSigners.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
->>>>>>> e8b9deaafa9c110bf5539289c4e6f8936f76d14e
       setAlreadySigned(true);
     } else {
       setAlreadySigned(false);
     }
-<<<<<<< HEAD
-  }, [
-    cachedCommitmentPoolData,
-    cachedCommitmentPoolData?.signers,
-    cachedSigner,
-    props.id,
-    setAlreadySigned,
-  ]);
-=======
   }, [cachedCommitmentPoolData, cachedCommitmentPoolData?.localSigners, cachedSigner, props.id, setAlreadySigned]);
->>>>>>> e8b9deaafa9c110bf5539289c4e6f8936f76d14e
 
   useEffect(() => {
     //TODO: hacky fix to use globalComittmentPool
@@ -267,14 +239,9 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             <Button disabled={!session} onClick={signAttestation}>
               Sign attestation
             </Button>
-<<<<<<< HEAD
-          )}
-          {isOperator && props.signatures.length < props.threshold && (
-=======
           ) :
             (<Button disabled>Already signed!</Button>)}
           {(isOperator && props.signatures.length < props.threshold) &&
->>>>>>> e8b9deaafa9c110bf5539289c4e6f8936f76d14e
             <Box background="green.50" padding={4} borderRadius={8}>
               <Text>
                 Welcome back! You need to wait until the threshold has been
