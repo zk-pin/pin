@@ -22,10 +22,7 @@ import {
   getPublicKeyFromPrivate,
 } from "@utils/crypto";
 import { generateProof } from "@utils/zkp";
-import {
-  revealCommitmentPool,
-  setSignature,
-} from "@utils/api";
+import { revealCommitmentPool, setSignature } from "@utils/api";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   addOperatorDataToCache,
@@ -45,12 +42,13 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   // figure out if this is already revealed
   const revealedSigners = useMemo(() => {
     return props.revealedPublicKeys;
-  }, [props])
+  }, [props]);
 
   const toast = useToast();
   const router = useRouter();
 
-  const refreshData = () => { // TODO: move to helper
+  const refreshData = () => {
+    // TODO: move to helper
     router.replace(router.asPath);
   };
 
@@ -117,7 +115,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       setIsLoading(true);
       if (!session || !session.user || !cachedSigner?.privateKey) {
         toast({
-          title: "Uh oh something went wrong with your session, can you try again?",
+          title:
+            "Uh oh something went wrong with your session, can you try again?",
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -125,50 +124,58 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         setIsLoading(false);
         return;
       }
-      //get signer private key
-      const privKey = cachedSigner.privateKey;
-      const serializedOpPubKey = props.operator.operator_key;
-      const serializedPublicKeys: string[] = props.serializedPublicKeys;
 
-      if (!privKey || serializedPublicKeys?.find((key) => !key)) {
-        setIsLoading(false);
-        return;
-      }
-
-      const circuitInput: ProofInput = await generateCircuitInputs(
-        serializedOpPubKey,
-        privKey,
-        serializedPublicKeys,
-        Number(props.id)
-      );
-
-      const { proof, publicSignals } = await generateProof(circuitInput);
-      const res = await setSignature(
-        proof,
-        publicSignals,
-        circuitInput.ciphertext,
-        props.id
-      );
-      if (res.status === 200) {
-        await refreshData();
-        toast({
-          title: "Successfully signed and generated proof.",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-        addSignerDataToCommitmentPoolInCache(props.id, cachedSigner.publicKey);
+      //if revealed
+      if (revealedSigners.length !== 0) {
       } else {
-        res.json().then((body) => {
+        //get signer private key
+        const privKey = cachedSigner.privateKey;
+        const serializedOpPubKey = props.operator.operator_key;
+        const serializedPublicKeys: string[] = props.serializedPublicKeys;
+
+        if (!privKey || serializedPublicKeys?.find((key) => !key)) {
+          setIsLoading(false);
+          return;
+        }
+
+        const circuitInput: ProofInput = await generateCircuitInputs(
+          serializedOpPubKey,
+          privKey,
+          serializedPublicKeys,
+          Number(props.id)
+        );
+
+        const { proof, publicSignals } = await generateProof(circuitInput);
+        const res = await setSignature(
+          proof,
+          publicSignals,
+          circuitInput.ciphertext,
+          props.id
+        );
+        if (res.status === 200) {
+          await refreshData();
           toast({
-            title: "Error: " + body.msg,
-            status: "warning",
+            title: "Successfully signed and generated proof.",
+            status: "success",
             duration: 3000,
             isClosable: true,
           });
-        })
+          addSignerDataToCommitmentPoolInCache(
+            props.id,
+            cachedSigner.publicKey
+          );
+        } else {
+          res.json().then((body) => {
+            toast({
+              title: "Error: " + body.msg,
+              status: "warning",
+              duration: 3000,
+              isClosable: true,
+            });
+          });
+        }
+        setIsLoading(false);
       }
-      setIsLoading(false);
     } catch (err: unknown) {
       console.error(err);
       toast({
@@ -261,33 +268,33 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
               </Text>
             </Box>
           )}
-          {isOperator && props.signatures.length >= props.threshold && revealedSigners.length === 0 && (
-            <VStack background="green.50" padding={4} borderRadius={8}>
-              <Text>
-                Hi {session?.user?.name}, This commitment pool is ready for
-                reveal.
+          {isOperator &&
+            props.signatures.length >= props.threshold &&
+            revealedSigners.length === 0 && (
+              <VStack background="green.50" padding={4} borderRadius={8}>
+                <Text>
+                  Hi {session?.user?.name}, This commitment pool is ready for
+                  reveal.
+                </Text>
+                <Button onClick={startReveal}>Reveal</Button>
+              </VStack>
+            )}
+          {revealedSigners.length > 0 && (
+            <Box padding={4} background="gray.50" textAlign="center">
+              <Text fontSize={20} fontWeight="bold">
+                Revealed Signers
               </Text>
-              <Button onClick={startReveal}>Reveal</Button>
-            </VStack>
-          )}
-          {revealedSigners.length > 0 &&
-            <Box padding={4} background='gray.50' textAlign='center'>
-              <Text fontSize={20} fontWeight='bold'>Revealed Signers</Text>
               {revealedSigners?.map((signer, idx) => {
-                return <VStack key={idx} width='100%'>
-                  <Text>
-                    {signer.name}
-                  </Text>
-                  <Text>
-                    {signer.id}
-                  </Text>
-                  <Text>
-                    {signer.serializedPublicKey}
-                  </Text>
-                </VStack>
+                return (
+                  <VStack key={idx} width="100%">
+                    <Text>{signer.name}</Text>
+                    <Text>{signer.id}</Text>
+                    <Text>{signer.serializedPublicKey}</Text>
+                  </VStack>
+                );
               })}
             </Box>
-          }
+          )}
           {isLoading && <Spinner />}
           {!isOperator && (
             <VStack background="gray.50" padding={4} borderRadius={8}>
@@ -355,8 +362,8 @@ export const getServerSideProps: GetServerSideProps = async ({
           name: true,
           serializedPublicKey: true,
           id: true,
-        }
-      }
+        },
+      },
     },
   });
 
