@@ -9,6 +9,7 @@ import {
   HStack,
   Text,
   Image as ChakraImage,
+  VStack,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { PoolList } from "@components/PoolListItem";
@@ -23,31 +24,33 @@ const Home: NextPage<Props> = ({ pools }) => {
   return (
     <Box className={styles.container}>
       <Box className={styles.main}>
-        <h1 className={styles.title}>Welcome to Power in Numbers!</h1>
-        <Text fontWeight="bold" className={styles.description}>
-          Active Commitment Pools
-        </Text>
-        {!session && (
-          <Button size="lg" variant="ghost" onClick={() => signIn()}>
-            Login
-          </Button>
-        )}
-        {session && (
-          <HStack marginBottom={4}>
-            <ChakraImage
-              alt={`${session.user?.name}'s profile picture`}
-              src={session.user?.image || ""}
-              width={10}
-              height={10}
-              borderRadius={"50%"}
-            />
-            <Text fontWeight="bold">Signed in as {session?.user?.name}</Text>
-          </HStack>
-        )}
-        <PoolList commitmentPools={pools} />
-        <Link href="/create">
-          <Button>Create Commitment Pool</Button>
-        </Link>
+        <VStack gap={2}>
+          <h1 className={styles.title}>Welcome to Power in Numbers!</h1>
+          {!session && (
+            <Button size="lg" variant="ghost" onClick={() => signIn()}>
+              Login
+            </Button>
+          )}
+          {session && (
+            <HStack marginBottom={4}>
+              <ChakraImage
+                alt={`${session.user?.name}'s profile picture`}
+                src={session.user?.image || ""}
+                width={10}
+                height={10}
+                borderRadius={"50%"}
+              />
+              <Text fontWeight="bold">Signed in as {session?.user?.name}</Text>
+            </HStack>
+          )}
+          <Text fontWeight="bold" className={styles.description}>
+            Active Commitment Pools
+          </Text>
+          {session && <Link href="/create">
+            <Button>Create Commitment Pool</Button>
+          </Link>}
+          <PoolList commitmentPools={pools} />
+        </VStack>
       </Box>
     </Box>
   );
