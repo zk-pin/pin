@@ -1,6 +1,6 @@
 [profile.default]
-src = 'src'
+src = 'contracts'
 out = 'out'
-libs = ['lib']
-
-# See more config options https://github.com/foundry-rs/foundry/tree/master/config
+libs = ['node_modules', 'lib']
+test = 'test/foundry'
+cache_path  = 'forge-cache'
