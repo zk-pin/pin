@@ -9,7 +9,7 @@ export default async function setPubKey(
 ) {
   try {
     const { id, publicKey } = req.body;
-    const user = await prisma.user.findMany({
+    const user = await prisma.user.findUnique({
       where: {
         id: id,
       },
@@ -17,8 +17,9 @@ export default async function setPubKey(
         serializedPublicKey: true,
       },
     });
+
     // only set a serializedPublicKey if the user hasn't already been assigned one
-    if (user.serializedPublicKey === "") {
+    if (!user.serializedPublicKey) {
       await prisma.user.update({
         where: {
           id: id,

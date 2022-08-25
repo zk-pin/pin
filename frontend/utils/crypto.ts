@@ -211,11 +211,14 @@ export const decryptCipherTexts = (
   const decryptedCipherTexts: string[] = [];
   const serializedPublicKeySet = new Set(serializedPublicKeys);
 
+  console.log("signatures: ", signatures);
   signatures.forEach((signature, idx) => {
     const cipherText = {
       iv: BigInt(signature.ciphertext[0]),
       data: signature.ciphertext.slice(1).map((cp) => BigInt(cp)),
     };
+
+    console.log("ciphertext: ", cipherText);
 
     serializedPublicKeySet.forEach((serializedPubKey) => {
       const tempPubKey = new PubKey(deserializePubKey(serializedPubKey));
@@ -225,6 +228,7 @@ export const decryptCipherTexts = (
       );
 
       const decryptAttempt = decrypt(cipherText, sharedSecret);
+      console.log(decryptAttempt);
       // check attempt and remove pub key from set
     });
   });
