@@ -79,10 +79,10 @@ model User {
   email               String?         @unique
   emailVerified       DateTime?       @map("email_verified")
   image               String?
+  commitmentPoolId    Int?
+  CommitmentPool      CommitmentPool? @relation(fields: [commitmentPoolId], references: [id])
   accounts            Account[]
   sessions            Session[]
-  CommitmentPool      CommitmentPool? @relation(fields: [commitmentPoolId], references: [id])
-  commitmentPoolId    Int?
 
   @@map("users")
 }

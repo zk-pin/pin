@@ -58,12 +58,10 @@ export async function revealCommitmentPool(
 
 // TODO: pass in a loading
 export const checkCachedSignerData = (
-  cachedSigner: { publicKey: string; privateKey: any } | undefined, // TODO: fix type
+  cachedSigner: { publicKey: string; privateKey: string } | undefined,
   session: any,
   toast: any
 ) => {
-  //TODO: hacky fix to use globalComittmentPool
-  //TODO: make more secure or encrypt or ask to store offline
   if (session || !cachedSigner) {
     const newPair = new Keypair();
     const pubKey = serializePubKey(newPair);
@@ -83,7 +81,10 @@ export const checkCachedSignerData = (
       } else if (res.status === 409) {
         // server already has a public key, out of sync
         res.json().then((body) => {
-          console.log("server's pub key", body.publicKey);
+          console.log(
+            "this is the server's pub key we have on file",
+            body.publicKey
+          );
         });
       }
     });
@@ -93,9 +94,8 @@ export const checkCachedSignerData = (
       (res) => {
         if (res.status === 409) {
           res.json().then((body) => {
-            console.log("status 409, sync server pubkey", body.publicKey);
             console.log(
-              "signer has pub key",
+              "status 409, sync server pubkey",
               cachedSigner.publicKey,
               body.publicKey
             );

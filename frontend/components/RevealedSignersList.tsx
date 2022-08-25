@@ -1,11 +1,11 @@
 import { Box, Text, VStack } from "@chakra-ui/react"
-import { IRevealedPublicKey } from "@utils/types"
+import { IRevealedSigners } from "@utils/types"
 
 const RevealedListItem = () => {
   return <>
   </>
 }
-export const RevealedSignersList = ({ revealedSigners }: { revealedSigners: IRevealedPublicKey[] }) => {
+export const RevealedSignersList = ({ revealedSigners }: { revealedSigners: IRevealedSigners[] }) => {
   return <>
     <Box padding={4} background='gray.50' textAlign='center'>
       <Text fontSize={20} fontWeight='bold'>Revealed Signers</Text>

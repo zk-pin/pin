@@ -14,7 +14,6 @@ export default async function setSignature(
 ) {
   try {
     const { commitmentPoolId, proof, publicSignals, ciphertext } = req.body;
-    console.log("id: ", commitmentPoolId);
     const options = {
       pinataMetadata: {
         name: "ZKPin",
@@ -34,8 +33,6 @@ export default async function setSignature(
       },
       options
     );
-
-    console.log("ipfs: ", ipfsData);
     // enforce no duplicate signatures
     const signatures = await prisma.signature.findMany({
       where: {
@@ -46,14 +43,10 @@ export default async function setSignature(
       },
     });
 
-    console.log("made it to signatures");
-
     const containsCipherText = signatures.filter(
       (signature) =>
         JSON.stringify(signature.ciphertext) === JSON.stringify(ciphertext)
     );
-    console.log("made it to containsCipherText");
-
     if (containsCipherText.length === 0) {
       await prisma.signature.create({
         data: {
@@ -70,7 +63,6 @@ export default async function setSignature(
           },
         },
       });
-      console.log("made it to containsCipherText.length");
       res.status(200).json({ success: true });
     } else {
       res.status(400).json({ success: false, msg: "already signed this pool" });

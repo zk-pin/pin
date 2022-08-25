@@ -46,7 +46,11 @@
 }
 
 @media (max-width: 600px) {
-
+  .title {
+    margin: 0;
+    line-height: 1.15;
+    font-size: 3rem;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
