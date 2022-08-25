@@ -65,7 +65,7 @@ export type ICommitmentPools = {
   commitmentPoolId: string; // primary key
   operatorId: string | number;
   operatorPublicKey: string;
-  hashedOperatorUserId: string; // store operator user id on client side for convenience
+  operatorUserId: string; // store operator user id on client side for convenience
   signers: IPoolSigner[];
   operatorPrivateKey?: string;
 };

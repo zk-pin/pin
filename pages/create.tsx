@@ -25,8 +25,7 @@ import { SerializedKeyPair } from "@utils/types";
 import { useClipboard } from "@chakra-ui/react";
 import { CheckIcon, CopyIcon } from "@chakra-ui/icons";
 import { useSession } from "next-auth/react";
-import sha256 from "crypto-js/sha256";
-import { addOperatorDataToCache, addSignerDataToCommitmentPoolInCache } from "@utils/dexie";
+import { addOperatorDataToCache } from "@utils/dexie";
 
 const CreatePool: NextPage = ({ }) => {
   const [keyPair, setKeyPair] = useState<SerializedKeyPair | undefined>(
@@ -89,7 +88,7 @@ const CreatePool: NextPage = ({ }) => {
       if (result.status === 200 && session?.user) {
         var resultBody = await result.json();
         // @ts-ignore TODO:
-        addOperatorDataToCache(resultBody.id, publicKey, resultBody.operatorId, sha256(session?.user.id ?? "").toString(), privateKey);
+        addOperatorDataToCache(resultBody.id, publicKey, resultBody.operatorId, session.user.id, privateKey);
         setSubmitted(true);
         setLoading(false);
       } else {

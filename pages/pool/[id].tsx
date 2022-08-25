@@ -27,7 +27,6 @@ import { generateProof } from "@utils/zkp";
 import { setSignature, updateUserPublicKey } from "@utils/api";
 import { useLiveQuery } from "dexie-react-hooks";
 import { addOperatorDataToCache, getCachedSignerData, getCachedCommitmentPoolData, addSignerDataToCommitmentPoolInCache, addSignerDataToCache } from '@utils/dexie';
-import sha256 from "crypto-js/sha256";
 import { useRouter } from "next/router";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
@@ -61,11 +60,11 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       setIsOperator(false);
       return;
     }
-    const operatorUserId = cachedCommitmentPoolData?.hashedOperatorUserId;
+    const operatorUserId = cachedCommitmentPoolData?.operatorUserId;
     if (!operatorUserId) { setIsOperator(false); return; }
 
     // @ts-ignore TODO:
-    if (sha256(session.user.id).toString() === operatorUserId) {
+    if (session.user.id === operatorUserId) {
       setIsOperator(true);
     }
   }, [setIsOperator, session, props.id, cachedCommitmentPoolData]);
@@ -73,6 +72,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   // figure out if this attestation has already been signed
   useEffect(() => {
     if (!cachedSigner || !cachedCommitmentPoolData) { return; }
+    console.log('alreadySigned?', cachedSigner?.publicKey, cachedCommitmentPoolData?.signers)
+
     if (cachedCommitmentPoolData.signers.length !== 0 &&
       cachedCommitmentPoolData.signers.filter((signer) => signer.publicKey === cachedSigner.publicKey)) {
       setAlreadySigned(true);
@@ -177,7 +178,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       if (content.operator_key === derivedPubKey) {
         setIsOperator(true);
         // @ts-ignore TODO:
-        addOperatorDataToCache(props.id, content.operator_key, content.id, session.user.id);
+        addOperatorDataToCache(props.id, content.operator_key, content.id, session.user.id, privKey);
       }
     },
   });
@@ -280,6 +281,7 @@ export const getServerSideProps: GetServerSideProps = async ({
     },
   });
 
+  // global public keys
   const sybilAddresses = {
     serializedPublicKeys: (
       await prisma.user.findMany({
@@ -294,14 +296,29 @@ export const getServerSideProps: GetServerSideProps = async ({
     where: {
       commitment_poolId: pool?.id,
     },
-  });
-  return {
-    props: {
-      ...JSON.parse(JSON.stringify(pool)),
-      ...JSON.parse(JSON.stringify(sybilAddresses)),
-      signatures: JSON.parse(JSON.stringify(signatures)),
+    select: {
+      ciphertext: true
     },
-  };
+  });
+
+  if (signatures.length >= (pool?.threshold || 0)) {
+    return {
+      props: {
+        ...JSON.parse(JSON.stringify(pool)),
+        ...JSON.parse(JSON.stringify(sybilAddresses)),
+        signatures: signatures.map(() => ''),
+      },
+    };
+  } else {
+    return {
+      props: {
+        ...JSON.parse(JSON.stringify(pool)),
+        ...JSON.parse(JSON.stringify(sybilAddresses)),
+        signatures: JSON.parse(JSON.stringify(signatures)),
+      },
+    };
+  }
+
 };
 
 export default CommitmentPool;
