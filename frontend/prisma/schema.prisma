@@ -39,9 +39,6 @@ model Ipfs {
 
 model Signature {
   id                Int            @id @default(autoincrement())
-  // for zkSNARK
-  proof             Json
-  publicSignals     Json
   ciphertext        String[]
   ipfs Ipfs @relation(fields: [ipfsId], references: [id])
   ipfsId Int @unique

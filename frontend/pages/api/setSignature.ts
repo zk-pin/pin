@@ -55,10 +55,10 @@ export default async function setSignature(
       await prisma.signature.create({
         data: {
           ipfs: {
-            connect: {
+            create: {
               ipfsHash: res.IpfsHash,
               pinSize: res.PinSize,
-              timestamp: res.timestamp,
+              timestamp: res.Timestamp,
             },
           },
           ciphertext,

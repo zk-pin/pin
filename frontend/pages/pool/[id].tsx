@@ -80,6 +80,8 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     }
   }, [setIsOperator, session, props.id, cachedCommitmentPoolData]);
 
+  console.log(alreadySigned);
+
   // figure out if this attestation has already been signed
   // only works for local signers (if you signed from the same device)
   useEffect(() => {
@@ -93,6 +95,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
         (signer) => signer.publicKey === cachedSigner.publicKey
       )
     ) {
+      console.log("cached: ", cachedCommitmentPoolData);
       setAlreadySigned(true);
     } else {
       setAlreadySigned(false);

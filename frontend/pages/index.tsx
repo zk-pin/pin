@@ -35,9 +35,9 @@ const Home: NextPage<Props> = ({ pools }) => {
     return signerData;
   }, [session]);
 
-  useEffect(() => {
-    testCircuit();
-  }, []);
+  // useEffect(() => {
+  //   testCircuit();
+  // }, []);
 
   //TODO: double hacky this is duplicated in [id]
   useEffect(() => {
@@ -57,7 +57,7 @@ const Home: NextPage<Props> = ({ pools }) => {
           addSignerDataToCache(session.user.id, pubKey, privKey);
         } else if (res.status === 409) {
           //@ts-ignore TODO:
-          addSignerDataToCache(session.user.id, res.publicKey, '');
+          addSignerDataToCache(session.user.id, res.publicKey, "");
         }
       });
     }
