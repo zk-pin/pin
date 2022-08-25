@@ -9,7 +9,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import prisma from "@utils/prisma";
-import { CommitmentPoolProps, ISignature, ProofInput } from "@utils/types";
+import { CommitmentPoolProps, ProofInput } from "@utils/types";
 import { GetServerSideProps, NextPage } from "next";
 import styles from "@styles/Home.module.css";
 import { useEffect, useState } from "react";
