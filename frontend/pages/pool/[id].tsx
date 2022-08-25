@@ -80,17 +80,12 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     }
   }, [cachedCommitmentPoolData, cachedCommitmentPoolData?.localSigners, cachedSigner, props.id, setAlreadySigned]);
 
-  useEffect(() => {
-    if (session && cachedSigner) {
-      checkCachedSignerData(cachedSigner, session, toast);
-    }
-  }, [cachedSigner, cachedSigner?.privateKey, session, toast]);
-
   const refreshData = () => {
     router.replace(router.asPath);
   };
 
   const signAttestation = async () => {
+    console.log('signAttestation', session, cachedSigner)
     try {
       setIsLoading(true);
       if (!session || !session.user || !cachedSigner?.privateKey) {

@@ -1,6 +1,7 @@
 import { Session } from "@prisma/client";
 import { Keypair } from "maci-domainobjs";
 import { serializePubKey } from "./crypto";
+import { addSignerDataToCache } from "./dexie";
 
 export async function updateUserPublicKey(id: string, publicKey: string) {
   const body = {
@@ -35,13 +36,37 @@ export async function setSignature(
 }
 
 export const checkCachedSignerData = (
-  cachedSigner: { publicKey: string; privateKey: any },
+  cachedSigner: { publicKey: string; privateKey: any } | undefined,
   session: any,
   toast: any
 ) => {
+  console.log("checkCachedSignerData", cachedSigner, session);
   //TODO: hacky fix to use globalComittmentPool
   //TODO: make more secure or encrypt or ask to store offline
-  if (session?.user && cachedSigner?.publicKey) {
+  if (session || !cachedSigner) {
+    const newPair = new Keypair();
+    const pubKey = serializePubKey(newPair);
+    const privKey = newPair.privKey.rawPrivKey.toString();
+    //@ts-ignore TODO:
+    updateUserPublicKey(session.user.id, pubKey).then((res) => {
+      if (res.status === 200) {
+        //@ts-ignore TODO:
+        addSignerDataToCache(session.user.id, pubKey, privKey);
+        toast({
+          title:
+            "Great! Issued a new private key. Please save this: " + privKey,
+          status: "error",
+          duration: 100000,
+          isClosable: true,
+        });
+      } else if (res.status === 409) {
+        // server already has a public key, out of sync
+        res.json().then((body) => {
+          console.log("server's pub key", body.publicKey);
+        });
+      }
+    });
+  } else if (session?.user && cachedSigner?.publicKey) {
     //@ts-ignore TODO:
     updateUserPublicKey(session.user.id, cachedSigner?.publicKey).then(
       (res) => {

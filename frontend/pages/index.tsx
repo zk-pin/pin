@@ -10,11 +10,8 @@ import {
   Text,
   VStack,
   Image as ChakraImage,
-  useToast,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import { useEffect } from "react";
-import { checkCachedSignerData } from "../utils/api";
 import { useLiveQuery } from "dexie-react-hooks";
 import { getCachedSignerData } from "@utils/dexie";
 import { PoolListItem } from "@components/PoolListItem";
@@ -32,14 +29,6 @@ const Home: NextPage<Props> = ({ pools }) => {
       const signerData = await getCachedSignerData(session.user.id);
       return signerData;
     }, [session]);
-
-  const toast = useToast();
-
-  useEffect(() => {
-    if (session && cachedSigner) {
-      checkCachedSignerData(cachedSigner, session, toast);
-    }
-  }, [cachedSigner, cachedSigner?.privateKey, session, toast]);
 
   return (
     <Box className={styles.container}>

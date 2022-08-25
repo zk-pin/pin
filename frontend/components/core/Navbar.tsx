@@ -1,15 +1,38 @@
-import { Button, Flex, HStack, Spinner, Text } from "@chakra-ui/react"
+import { Button, Flex, HStack, Spinner, Text, useToast } from "@chakra-ui/react"
 import { useRouter } from 'next/router';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Image as ChakraImage } from '@chakra-ui/react'
+import { useLiveQuery } from "dexie-react-hooks";
+import { checkCachedSignerData } from "@utils/api";
+import { useEffect } from "react";
+import { getCachedSignerData } from "@utils/dexie";
 
 export const NavBar = () => {
   const router = useRouter();
+  const toast = useToast();
   const isActive: (pathname: string) => boolean = (pathname) =>
     router.pathname === pathname;
 
   const { data: session, status } = useSession();
+
+  const cachedSigner = useLiveQuery(
+    async () => {
+      if (!session) { return; }
+      // @ts-ignore TODO:
+      const signerData = await getCachedSignerData(session.user.id);
+      return signerData;
+    }, [session, session?.user]);
+
+  const signInTwitter = () => {
+    signIn();
+  }
+
+  useEffect(() => {
+    if (session) {
+      checkCachedSignerData(cachedSigner, session, toast);
+    }
+  }, [cachedSigner, cachedSigner?.privateKey, session, toast]);
 
   return (<Flex
     as="header"
@@ -33,7 +56,7 @@ export const NavBar = () => {
       </Button>
     }
     {!session &&
-      <Button size="lg" variant="ghost" onClick={() => signIn()} isActive={isActive('/signup')}>
+      <Button size="lg" variant="ghost" onClick={() => signInTwitter()} isActive={isActive('/signup')}>
         Login
       </Button>
     }
