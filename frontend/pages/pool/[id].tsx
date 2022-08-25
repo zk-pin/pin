@@ -83,7 +83,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     }
   }, [setIsOperator, session, props.id, cachedCommitmentPoolData]);
 
-  console.log(alreadySigned);
+  console.log('alreadySigned', alreadySigned);
 
   // figure out if this attestation has already been signed
   // only works for local signers (if you signed from the same device)
