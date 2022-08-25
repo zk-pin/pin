@@ -228,7 +228,7 @@ export const decryptCipherTexts = (
       );
 
       const decryptAttempt = decrypt(cipherText, sharedSecret);
-      console.log(decryptAttempt);
+      console.log("decryptAttempt", decryptAttempt);
       // check attempt and remove pub key from set
     });
   });
@@ -277,6 +277,7 @@ export async function testCircuit() {
     ciphertext,
     Keypair.genEcdhSharedKey(operator.privKey, signer.pubKey)
   );
+
   console.log("cyper: ", plaintext, " deciphered: ", decryptedCiphertext);
 
   const res = await prepareInputs(
