@@ -34,8 +34,6 @@ export default async function handler(
         users.push(JSON.parse(JSON.stringify(tempUser)));
       }
     }
-
-    console.log("matching users", users);
     await prisma.commitmentPool.update({
       where: {
         id: id,
@@ -50,6 +48,7 @@ export default async function handler(
         },
       },
     });
+    console.log("matching users", users);
     return users;
   } catch (err: any) {
     console.log(err);

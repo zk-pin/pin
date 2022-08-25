@@ -7,7 +7,7 @@ export async function updateUserPublicKey(id: string, publicKey: string) {
     id,
     publicKey,
   };
-  return fetch(`/api/setPubKey`, {
+  return await fetch(`/api/setPubKey`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

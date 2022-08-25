@@ -1,13 +1,4 @@
-import {
-  Box,
-  Button,
-  HStack,
-  Input,
-  Spinner,
-  Text,
-  useToast,
-  VStack,
-} from "@chakra-ui/react";
+import { Box, Button, Spinner, Text, useToast, VStack } from "@chakra-ui/react";
 import prisma from "@utils/prisma";
 import { CommitmentPoolProps, ProofInput } from "@utils/types";
 import { GetServerSideProps, NextPage } from "next";
@@ -31,6 +22,13 @@ import {
   addSignerDataToCommitmentPoolInCache,
 } from "@utils/dexie";
 import { useRouter } from "next/router";
+import { RevealedSignersList } from "@components/RevealedSignersList";
+import {
+  OperatorPrivateInput,
+  ReadyForReveal,
+  WaitForThreshold,
+} from "@components/OperatorComponents";
+import axios from "axios";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const { data: session } = useSession();
@@ -127,6 +125,21 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
       //if revealed
       if (revealedSigners.length !== 0) {
+        const addSignerRes = await axios.put("/api/addRevealedSigner", {
+          newRevealedSigners: [
+            ...revealedSigners.map((el) => el.id),
+            session.user.id,
+          ],
+          commitmentPoolId: props.id,
+        });
+        setIsLoading(false);
+        if (addSignerRes.status !== 200) {
+          throw new Error(
+            `Error occurred adding signer to revealed signers: ${addSignerRes.response}`
+          );
+        } else {
+          await refreshData();
+        }
       } else {
         //get signer private key
         const privKey = cachedSigner.privateKey;
@@ -234,7 +247,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       props.signatures,
       parseInt(props.id)
     );
-    revealCommitmentPool(props.id, revealedSigners);
+    const revealed = await revealCommitmentPool(props.id, revealedSigners);
     refreshData();
   };
 
@@ -261,76 +274,19 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             <Button disabled>Already signed!</Button>
           )}
           {isOperator && props.signatures.length < props.threshold && (
-            <Box background="orange.50" padding={4} borderRadius={8}>
-              <Text>
-                Welcome back! You need to wait until the threshold has been
-                reached to reveal. Come back later.
-              </Text>
-            </Box>
+            <WaitForThreshold />
           )}
           {isOperator &&
             props.signatures.length >= props.threshold &&
             revealedSigners.length === 0 && (
-              <VStack background="green.50" padding={4} borderRadius={8}>
-                <Text>
-                  Hi {session?.user?.name}, This commitment pool is ready for
-                  reveal.
-                </Text>
-                <Button onClick={startReveal}>Reveal</Button>
-              </VStack>
+              <ReadyForReveal startReveal={startReveal} />
             )}
           {revealedSigners.length > 0 && (
-            <Box padding={4} background="gray.50" textAlign="center">
-              <Text fontSize={20} fontWeight="bold">
-                Revealed Signers
-              </Text>
-              {revealedSigners?.map((signer, idx) => {
-                return (
-                  <VStack key={idx} width="100%">
-                    <Text>{signer.name}</Text>
-                    <Text>{signer.id}</Text>
-                    <Text>{signer.serializedPublicKey}</Text>
-                  </VStack>
-                );
-              })}
-            </Box>
+            <RevealedSignersList revealedSigners={revealedSigners} />
           )}
           {isLoading && <Spinner />}
-          {!isOperator && (
-            <VStack background="gray.50" padding={4} borderRadius={8}>
-              <Text color="gray.600">
-                {`Are you the operator? Sorry, we didn't recognize you but if you have your key pair handy we can sign you back in as an operator.`}
-              </Text>
-              <form
-                onSubmit={submitPrivateKeyForm.handleSubmit}
-                style={{ width: "100%", maxWidth: "1000px" }}
-              >
-                <VStack
-                  textAlign="start"
-                  justifyContent="start"
-                  alignContent="start"
-                >
-                  {submitPrivateKeyForm.errors.privateKey && (
-                    <Text color="red.400">
-                      *{submitPrivateKeyForm.errors.privateKey}
-                    </Text>
-                  )}
-                  <HStack width="100%">
-                    <Input
-                      id="privateKey"
-                      name="privateKey"
-                      type="text"
-                      placeholder="private key (make sure to check the URL is zkpin.xyz, be careful where you share this)"
-                      onChange={submitPrivateKeyForm.handleChange}
-                      value={submitPrivateKeyForm.values.privateKey}
-                    />
-                    <Button type="submit" disabled={!session}>
-                      Submit
-                    </Button>
-                  </HStack>
-                </VStack>
-              </form>
-            </VStack>
+          {!isOperator && revealedSigners.length === 0 && (
+            <OperatorPrivateInput submitPrivateKeyForm={submitPrivateKeyForm} />
           )}
         </VStack>
       </Box>
