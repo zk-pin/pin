@@ -12,13 +12,12 @@ const PoolListItem = ({ pool }: Props) => {
       <Box
         as="button"
         width={'100%'}
-        border='0.5px'
         padding={4}
-        background={'gray.50'}
-        _hover={{ background: 'gray.100' }}
+        _hover={{ background: 'gray.50' }}
         borderRadius={0}
         borderWidth='1px'
         borderColor={'gray.500'}
+        margin={0}
       >
         <HStack justifyContent='space-between' width="100%">
           <HStack textAlign='start' width="100%">
@@ -36,7 +35,7 @@ const PoolListItem = ({ pool }: Props) => {
 
 export const PoolList = ({ commitmentPools }: { commitmentPools: CommitmentPoolProps[] }) => {
   return (
-    <VStack marginBottom={8} width={'100%'} maxWidth="1000px">
+    <VStack marginBottom={8} width={'100%'} maxWidth="1000px" gap={0}>
       {commitmentPools.map((pool, idx) => (
         <PoolListItem key={idx} pool={pool} />
       ))}
