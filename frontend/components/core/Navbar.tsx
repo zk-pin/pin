@@ -54,17 +54,17 @@ export const NavBar = () => {
     zIndex={100}
   >
     <Link href="/">
-      <Button size="lg" variant="ghost">
+      <Button size="lg">
         Home
       </Button>
     </Link>
     {status === 'loading' &&
-      <Button size="lg" variant="ghost" rightIcon={<Spinner />}>
+      <Button size="lg" rightIcon={<Spinner />}>
         Login
       </Button>
     }
     {!session &&
-      <Button size="lg" variant="ghost" onClick={() => signInTwitter()} isActive={isActive('/signup')}>
+      <Button size="lg" onClick={() => signInTwitter()} isActive={isActive('/signup')}>
         Login
       </Button>
     }

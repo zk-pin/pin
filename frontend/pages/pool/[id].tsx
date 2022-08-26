@@ -237,6 +237,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     if (!isOperator || !cachedCommitmentPoolData?.operatorPrivateKey) {
       return;
     }
+    setIsLoading(true);
     const revealedSigners = await decryptCipherTexts(
       cachedCommitmentPoolData?.operatorPrivateKey,
       props.serializedPublicKeys,
@@ -244,6 +245,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       parseInt(props.id)
     );
     await revealCommitmentPool(props.id, revealedSigners);
+    setIsLoading(false);
     refreshData();
   };
 

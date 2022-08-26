@@ -2,6 +2,7 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { ChakraProvider } from "@chakra-ui/react";
+import { theme as chakraTheme } from '@chakra-ui/react'
 import { extendTheme } from "@chakra-ui/react";
 import { NavBar } from "@components/core/Navbar";
 import Footer from "@components/core/Footer";
@@ -17,8 +18,21 @@ const theme = extendTheme({
     Button: {
       baseStyle: {
         fontWeight: "bold",
+        borderRadius: 0,
       },
+      variants: {
+        solid: {
+          borderWidth: 1,
+          backgroundColor: 'gray.100',
+          borderColor: 'gray.400',
+        }
+      }
     },
+  },
+  fonts: {
+    ...chakraTheme.fonts,
+    body: `monospace`,
+    heading: `monospace`
   },
   styles: {
     global: {

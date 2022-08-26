@@ -27,7 +27,7 @@ const Home: NextPage<Props> = ({ pools }) => {
         <VStack gap={2}>
           <h1 className={styles.title}>Welcome to Power in Numbers!</h1>
           {!session && (
-            <Button size="lg" variant="ghost" onClick={() => signIn()}>
+            <Button size="lg" onClick={() => signIn()}>
               Login
             </Button>
           )}

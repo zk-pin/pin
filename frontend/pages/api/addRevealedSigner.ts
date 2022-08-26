@@ -15,7 +15,7 @@ export default async function addRevealedSigner(
       },
       data: {
         revealedPublicKeys: {
-          connect: newRevealedSigners.map((signer: string) => {
+          set: newRevealedSigners.map((signer: string) => {
             return {
               id: signer,
             };
