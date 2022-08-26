@@ -23,8 +23,8 @@ const theme = extendTheme({
       variants: {
         solid: {
           borderWidth: 1,
-          backgroundColor: 'gray.100',
-          borderColor: 'gray.400',
+          backgroundColor: 'gray.50',
+          borderColor: 'gray.500',
         }
       }
     },
