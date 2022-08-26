@@ -49,7 +49,8 @@ export default async function handler(
         },
       },
     });
-    return users;
+    res.status(200).json({ users });
+    return;
   } catch (err: any) {
     console.log(err);
     res.status(400).json({ err });
