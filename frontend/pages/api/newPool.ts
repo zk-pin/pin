@@ -19,8 +19,7 @@ export default async function handler(
   console.log("POST /api/newPool");
 
   try {
-    // const session = await getSession({ req });
-    console.log(authOptions);
+    // const session = await getSession({ req }); // need to use unstable for prod
     const session = await unstable_getServerSession(req, res, authOptions);
     console.log("session", session);
     if (!session) {
