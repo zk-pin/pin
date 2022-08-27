@@ -4,7 +4,7 @@ import TwitterProvider from "next-auth/providers/twitter";
 import prisma from "@utils/prisma";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
-export default NextAuth({
+export const authOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXT_AUTH_SECRET,
   providers: [
@@ -16,14 +16,26 @@ export default NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, user }) {
+    async session({
+      session,
+      user,
+      token,
+    }: {
+      session: any;
+      user: any;
+      token: any;
+    }) {
+      console.log("session: ", session, " user: ", user);
       // Send properties to the client, like an access_token from a provider.
       session.user = {
         ...user,
       };
       // @ts-ignore TODO:
       session.user.id = user.id;
+      session.token = token;
       return session;
     },
   },
-});
+};
+
+export default NextAuth(authOptions);

@@ -4,7 +4,6 @@ import { CommitmentPoolProps, ProofInput } from "@utils/types";
 import { GetServerSideProps, NextPage } from "next";
 import styles from "@styles/Home.module.css";
 import { useEffect, useMemo, useState } from "react";
-import { useSession } from "next-auth/react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import {
@@ -28,10 +27,12 @@ import {
   ReadyForReveal,
   WaitForThreshold,
 } from "@components/OperatorComponents";
+import { authOptions } from "pages/api/auth/[...nextauth]";
+import { unstable_getServerSession } from "next-auth";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
-  const { data: session } = useSession();
-
+  const session = props.session;
+  console.log('SESSSIONNN', session);
   const [isOperator, setIsOperator] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [alreadySigned, setAlreadySigned] = useState(false);
@@ -293,10 +294,19 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   );
 };
 
-//TODO: type props
 export const getServerSideProps: GetServerSideProps = async ({
-  params,
+  req, res, params,
 }): Promise<any> => {
+  const session = await unstable_getServerSession(req, res, authOptions); // need unstable for prod
+  console.log('sessionning', session);
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
   const pool = await prisma.commitmentPool.findUnique({
     where: {
       id: Number(params?.id) || -1,
@@ -358,6 +368,7 @@ export const getServerSideProps: GetServerSideProps = async ({
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
         signatures: signatures.map(() => ""),
+        session: { ...JSON.parse(JSON.stringify(session)) },
       },
     };
   }

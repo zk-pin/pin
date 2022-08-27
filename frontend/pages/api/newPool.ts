@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getSession } from "next-auth/react";
 import prisma from "@utils/prisma";
 import { CommitmentPool } from "@prisma/client";
+import { unstable_getServerSession } from "next-auth";
+import { authOptions } from "./auth/[...nextauth]";
 
 // POST /api/newPool
 // Required fields in body: title, publicKey, threshold
@@ -18,7 +19,8 @@ export default async function handler(
   console.log("POST /api/newPool");
 
   try {
-    const session = await getSession({ req });
+    // const session = await getSession({ req }); // need to use unstable for prod
+    const session = await unstable_getServerSession(req, res, authOptions);
     console.log("session", session);
     if (!session) {
       res.status(400).json({ msg: "you must be in an active session" });
