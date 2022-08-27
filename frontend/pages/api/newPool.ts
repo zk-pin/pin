@@ -15,6 +15,8 @@ export default async function handler(
     res.status(400).json({ msg: "mising a required field" });
     return;
   }
+  console.log("POST /api/newPool");
+
   try {
     const session = await getSession({ req });
     console.log("session", session);
@@ -50,7 +52,7 @@ export default async function handler(
     res.json({ ...commitmentPool, id: commitmentPool.id });
     return;
   } catch (err: any) {
-    console.log(err);
+    console.error(err);
     res.status(400).json({ err });
     return;
   }
