@@ -17,6 +17,7 @@ export default async function handler(
   }
   try {
     const session = await getSession({ req });
+    console.log("session", session);
     if (!session) {
       res.status(400).json({ msg: "you must be in an active session" });
       return;
