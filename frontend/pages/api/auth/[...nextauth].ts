@@ -28,21 +28,5 @@ export default NextAuth({
       session.user.id = user.id;
       return session;
     },
-
-    async jwt({
-      token,
-      account,
-    }: {
-      token: JWT;
-      user?: User | undefined;
-      account?: Account | undefined;
-      profile?: Profile | undefined;
-      isNewUser?: boolean | undefined;
-    }) {
-      if (account?.provider && !token[account.provider]) {
-        token[account.provider] = {};
-      }
-      return token;
-    },
   },
 });
