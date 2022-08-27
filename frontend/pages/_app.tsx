@@ -28,6 +28,44 @@ const theme = extendTheme({
         }
       }
     },
+    Input: {
+      baseStyle: {
+        field: {
+          borderRadius: 0,
+          borderColor: 'gray.800',
+          _hover: {
+            borderColor: 'primary.foreground',
+          },
+        },
+      },
+    },
+    Textarea: {
+      baseStyle: {
+        borderRadius: 0,
+        borderColor: 'gray.800',
+        _hover: {
+          borderColor: 'primary.foreground',
+        },
+      }
+    },
+    NumberInput: {
+      baseStyle: {
+        field: {
+          borderRadius: 'none',
+          borderColor: 'gray.800',
+          _hover: {
+            borderColor: 'primary.foreground',
+          },
+        },
+        stepper: {
+          borderRadius: 'none',
+          borderColor: 'gray.800',
+          _hover: {
+            borderColor: 'primary.foreground',
+          },
+        }
+      },
+    }
   },
   fonts: {
     ...chakraTheme.fonts,

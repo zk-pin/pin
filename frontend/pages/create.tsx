@@ -113,147 +113,150 @@ const CreatePool: NextPage = ({ }) => {
   return (
     <Box className={styles.container}>
       <Box className={styles.main}>
-        <h1 className={styles.title}>Create pool</h1>
-        <form
-          onSubmit={createPoolForm.handleSubmit}
-          style={{ width: "100%", maxWidth: "1000px" }}
-        >
-          <VStack textAlign="start" justifyContent="start" alignContent="start">
-            <Text fontWeight="bold">Title</Text>
-            {createPoolForm.errors.title && (
-              <Text color="red.400">*{createPoolForm.errors.title}</Text>
-            )}
-            <Input
-              id="title"
-              name="title"
-              type="title"
-              onChange={createPoolForm.handleChange}
-              value={createPoolForm.values.title}
-            />
-            <Text fontWeight="bold">Description</Text>
-            {createPoolForm.errors.description && (
-              <Text color="red.400">*{createPoolForm.errors.description}</Text>
-            )}
-            <Textarea
-              id="description"
-              name="description"
-              onChange={createPoolForm.handleChange}
-              value={createPoolForm.values.description}
-            />
-
-            <HStack justifyContent="space-between" width="100%">
-              <HStack>
-                <Text fontWeight="bold">Threshold</Text>
-                {createPoolForm.errors.threshold && (
-                  <Text color="red.400">
-                    *{createPoolForm.errors.threshold}
+        <VStack gap={2}>
+          <h1>Create pool</h1>
+          <form
+            onSubmit={createPoolForm.handleSubmit}
+            style={{ width: "100%", maxWidth: "1000px" }}
+          >
+            <VStack textAlign="start" justifyContent="start" alignContent="start">
+              <Text fontWeight="bold">Title</Text>
+              {createPoolForm.errors.title && (
+                <Text color="red.400">*{createPoolForm.errors.title}</Text>
+              )}
+              <Input
+                id="title"
+                name="title"
+                type="title"
+                onChange={createPoolForm.handleChange}
+                value={createPoolForm.values.title}
+                borderRadius={0}
+              />
+              <Text fontWeight="bold">Description</Text>
+              {createPoolForm.errors.description && (
+                <Text color="red.400">*{createPoolForm.errors.description}</Text>
+              )}
+              <Textarea
+                id="description"
+                name="description"
+                onChange={createPoolForm.handleChange}
+                value={createPoolForm.values.description}
+                borderRadius={0}
+              />
+              <HStack justifyContent="space-between" width="100%" marginTop={5}>
+                <HStack>
+                  <Text fontWeight="bold">Threshold</Text>
+                  {createPoolForm.errors.threshold && (
+                    <Text color="red.400">
+                      *{createPoolForm.errors.threshold}
+                    </Text>
+                  )}
+                  <NumberInput
+                    id="threshold"
+                    name="threshold"
+                    step={5}
+                    min={1}
+                    onChange={(val) =>
+                      createPoolForm.setFieldValue("threshold", val)
+                    }
+                    value={createPoolForm.values.threshold}                  >
+                    <NumberInputField borderRadius={0} />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </HStack>
+                {!userHasValidSession && (
+                  <Text color="gray.600">
+                    Please sign in before attempting to create a new commitment
+                    pool
                   </Text>
                 )}
-                <NumberInput
-                  id="threshold"
-                  name="threshold"
-                  step={5}
-                  onChange={(val) =>
-                    createPoolForm.setFieldValue("threshold", val)
-                  }
-                  value={createPoolForm.values.threshold}
-                >
-                  <NumberInputField />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
+                {!submitted && !loading && (
+                  <Button
+                    disabled={!userHasValidSession}
+                    type="submit"
+                    marginTop={4}
+                  >
+                    Submit
+                  </Button>
+                )}
               </HStack>
-              {!userHasValidSession && (
-                <Text color="gray.600">
-                  Please sign in before attempting to create a new commitment
-                  pool
-                </Text>
-              )}
-              {!submitted && !loading && (
-                <Button
-                  disabled={!userHasValidSession}
-                  type="submit"
-                  marginTop={4}
-                >
+              {!submitted && loading && (
+                <Button type="submit" marginTop={4} rightIcon={<Spinner />}>
                   Submit
                 </Button>
               )}
-            </HStack>
-            {!submitted && loading && (
-              <Button type="submit" marginTop={4} rightIcon={<Spinner />}>
-                Submit
-              </Button>
-            )}
-            {submitted && !loading && (
-              <Box
-                background="blue.50"
-                padding={4}
-                marginTop={4}
-                marginBottom={4}
-                borderRadius={8}
-                width="100%"
-              >
-                <VStack gap={2} width={"100%"}>
-                  <Text>
-                    This will be the only time we show your operator private
-                    key. You will need this key to decrypt the signatures once
-                    the threshold has been reached. Please save it in a safe
-                    space.
-                  </Text>
-                  <Text fontWeight="bold">Operator Public Key</Text>
-                  <Flex mb={2} width={"100%"}>
-                    <Input
-                      value={keyPair && keyPair.publicKey}
-                      isReadOnly
-                      placeholder="Welcome"
-                    />
-                    {hasCopiedPub ? (
-                      <IconButton
-                        aria-label={"completed copy button"}
-                        ml={2}
-                        icon={<CheckIcon />}
+              {submitted && !loading && (
+                <Box
+                  background="blue.50"
+                  padding={4}
+                  marginTop={4}
+                  marginBottom={4}
+                  borderRadius={8}
+                  width="100%"
+                >
+                  <VStack gap={2} width={"100%"}>
+                    <Text>
+                      This will be the only time we show your operator private
+                      key. You will need this key to decrypt the signatures once
+                      the threshold has been reached. Please save it in a safe
+                      space.
+                    </Text>
+                    <Text fontWeight="bold">Operator Public Key</Text>
+                    <Flex mb={2} width={"100%"}>
+                      <Input
+                        value={keyPair && keyPair.publicKey}
+                        isReadOnly
+                        placeholder="Welcome"
                       />
-                    ) : (
-                      <IconButton
-                        onClick={onCopyPub}
-                        ml={2}
-                        aria-label={"copy icon button"}
-                        icon={<CopyIcon />}
+                      {hasCopiedPub ? (
+                        <IconButton
+                          aria-label={"completed copy button"}
+                          ml={2}
+                          icon={<CheckIcon />}
+                        />
+                      ) : (
+                        <IconButton
+                          onClick={onCopyPub}
+                          ml={2}
+                          aria-label={"copy icon button"}
+                          icon={<CopyIcon />}
+                        />
+                      )}
+                    </Flex>
+                    <Text fontWeight="bold">Operator Private Key</Text>
+                    <Flex mb={2} width={"100%"}>
+                      <Input
+                        value={keyPair && keyPair.privateKey}
+                        isReadOnly
+                        placeholder="Welcome"
                       />
-                    )}
-                  </Flex>
-                  <Text fontWeight="bold">Operator Private Key</Text>
-                  <Flex mb={2} width={"100%"}>
-                    <Input
-                      value={keyPair && keyPair.privateKey}
-                      isReadOnly
-                      placeholder="Welcome"
-                    />
-                    {hasCopiedPriv ? (
-                      <IconButton
-                        aria-label={"completed copy button"}
-                        ml={2}
-                        icon={<CheckIcon />}
-                      />
-                    ) : (
-                      <IconButton
-                        onClick={onCopyPriv}
-                        ml={2}
-                        aria-label={"copy icon button"}
-                        icon={<CopyIcon />}
-                      />
-                    )}
-                  </Flex>
-                  <Flex justifyContent="end" width="100%">
-                    <Button onClick={onClickDone}>Done</Button>
-                  </Flex>
-                </VStack>
-              </Box>
-            )}
-          </VStack>
-        </form>
+                      {hasCopiedPriv ? (
+                        <IconButton
+                          aria-label={"completed copy button"}
+                          ml={2}
+                          icon={<CheckIcon />}
+                        />
+                      ) : (
+                        <IconButton
+                          onClick={onCopyPriv}
+                          ml={2}
+                          aria-label={"copy icon button"}
+                          icon={<CopyIcon />}
+                        />
+                      )}
+                    </Flex>
+                    <Flex justifyContent="end" width="100%">
+                      <Button onClick={onClickDone}>Done</Button>
+                    </Flex>
+                  </VStack>
+                </Box>
+              )}
+            </VStack>
+          </form>
+        </VStack>
       </Box>
     </Box>
   );

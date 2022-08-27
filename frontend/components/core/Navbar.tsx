@@ -58,7 +58,7 @@ export const NavBar = () => {
         Login
       </Button>
     }
-    {!session &&
+    {!session && status !== 'loading' &&
       <Button size="lg" onClick={() => signInTwitter()} isActive={isActive('/signup')}>
         Login
       </Button>
