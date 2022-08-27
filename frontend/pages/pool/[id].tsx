@@ -31,8 +31,8 @@ import { authOptions } from "pages/api/auth/[...nextauth]";
 import { unstable_getServerSession } from "next-auth";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
-  const session = props.session;
-  console.log('SESSSIONNN', session);
+  const session = props.nextAuthSession;
+
   const [isOperator, setIsOperator] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [alreadySigned, setAlreadySigned] = useState(false);
@@ -111,6 +111,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const signAttestation = async () => {
     try {
       setIsLoading(true);
+      console.log('SIGNING DUDE', session, !session || !session.user, !session, !session.user, !cachedSigner?.privateKey)
       if (!session || !session.user || !cachedSigner?.privateKey) {
         toast({
           title:
@@ -298,7 +299,7 @@ export const getServerSideProps: GetServerSideProps = async ({
   req, res, params,
 }): Promise<any> => {
   const session = await unstable_getServerSession(req, res, authOptions); // need unstable for prod
-  console.log('sessionning', session);
+
   if (!session) {
     return {
       redirect: {
@@ -332,8 +333,6 @@ export const getServerSideProps: GetServerSideProps = async ({
     },
   });
 
-  console.log("pool: ", pool);
-
   // global public keys
   const sybilAddresses = {
     serializedPublicKeys: (
@@ -360,6 +359,9 @@ export const getServerSideProps: GetServerSideProps = async ({
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
         signatures: JSON.parse(JSON.stringify(signatures)),
+        nextAuthSession: {
+          ...JSON.parse(JSON.stringify(session)),
+        },
       },
     };
   } else {
@@ -368,7 +370,9 @@ export const getServerSideProps: GetServerSideProps = async ({
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
         signatures: signatures.map(() => ""),
-        session: { ...JSON.parse(JSON.stringify(session)) },
+        nextAuthSession: {
+          ...JSON.parse(JSON.stringify(session)),
+        },
       },
     };
   }

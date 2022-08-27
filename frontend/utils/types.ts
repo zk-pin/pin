@@ -9,7 +9,7 @@ export type CommitmentPoolProps = {
   signatures: any[];
   revealedPublicKeys: IRevealedSigners[];
   serializedPublicKeys: string[];
-  session: any; // TODO: fix types
+  nextAuthSession: any; // TODO: fix types
 };
 
 export type IRevealedSigners = {
