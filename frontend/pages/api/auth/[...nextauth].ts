@@ -16,13 +16,13 @@ export default NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, user }) {
+    async session({ session, user, token }) {
       console.log("session: ", session, " user: ", user);
       // Send properties to the client, like an access_token from a provider.
       session.user = {
         ...user,
       };
-      session.accessToken = "asjdfaskdjfkaslfjkasldfjl";
+      session.token = token;
       // @ts-ignore TODO:
       session.user.id = user.id;
       return session;
