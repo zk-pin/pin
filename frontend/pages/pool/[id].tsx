@@ -299,6 +299,14 @@ export const getServerSideProps: GetServerSideProps = async ({
 }): Promise<any> => {
   const session = await unstable_getServerSession(req, res, authOptions); // need unstable for prod
   console.log('sessionning', session);
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
   const pool = await prisma.commitmentPool.findUnique({
     where: {
       id: Number(params?.id) || -1,
