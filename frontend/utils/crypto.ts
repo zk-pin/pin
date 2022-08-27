@@ -217,7 +217,6 @@ export const decryptCipherTexts = (
   const operatorPrivateKey = new PrivKey(BigInt(operatorPrivateKeyString));
   const revealedSigners: string[] = [];
   const serializedPublicKeySet = new Set(serializedPublicKeys);
-
   signatures.forEach((signature) => {
     const cipherText = {
       iv: BigInt(signature.ciphertext[0]),
@@ -225,6 +224,7 @@ export const decryptCipherTexts = (
     };
 
     serializedPublicKeySet.forEach((serializedPubKey) => {
+      console.log("attempting with key: ", serializedPubKey);
       const tempPubKey = new PubKey(deserializePubKey(serializedPubKey));
       const sharedSecret = Keypair.genEcdhSharedKey(
         operatorPrivateKey,
@@ -233,8 +233,9 @@ export const decryptCipherTexts = (
 
       const decryptAttempt = decrypt(cipherText, sharedSecret);
       if (Number(decryptAttempt[0]) === commitmentPoolId) {
+        console.log("found a match", decryptAttempt, commitmentPoolId);
         revealedSigners.push(serializedPubKey);
-        serializedPublicKeySet.delete(serializedPubKey);
+        // serializedPublicKeySet.delete(serializedPubKey);
       }
     });
   });

@@ -32,15 +32,10 @@ export const NavBar = () => {
   }
 
   useEffect(() => {
-    // TODO: fix loading cache state
-    // if (loadingCachedSigned) {
-    //   console.log('loadingCachedSigned', loadingCachedSigned)
-    //   return;
-    // }
     if (session) {
       checkCachedSignerData(cachedSigner, session, toast);
     }
-  }, [cachedSigner, cachedSigner?.privateKey, session, toast]);
+  }, [session]);
 
   return (<Flex
     as="header"

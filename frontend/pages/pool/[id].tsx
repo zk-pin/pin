@@ -263,6 +263,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
           {(!revealedPublicKeys || revealedPublicKeys.length === 0) && <Text>
             {props.signatures.length || 0}/{props.threshold} signatures
           </Text>}
+          {props.description && <Text>{props.description}</Text>}
           {!session && <Text color="gray.600">Please sign in to attest</Text>}
           {!alreadySigned ? (
             <Button disabled={!session} onClick={signAttestation}>
@@ -274,9 +275,11 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
           {isOperator && revealedPublicKeys && revealedPublicKeys.length === 0 && props.signatures.length < props.threshold && (
             <WaitForThreshold />
           )}
-          {isOperator && props.signatures.length >= props.threshold && revealedPublicKeys && revealedPublicKeys.length === 0 && (
-            <ReadyForReveal startReveal={startReveal} />
-          )}
+          {isOperator
+            && props.signatures.length >= props.threshold && revealedPublicKeys && revealedPublicKeys.length === 0
+            && (
+              <ReadyForReveal startReveal={startReveal} />
+            )}
           {revealedPublicKeys?.length > 0 &&
             <RevealedSignersList revealedSigners={revealedPublicKeys} />
           }
