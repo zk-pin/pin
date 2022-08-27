@@ -27,9 +27,9 @@ export default NextAuth({
       session.user = {
         ...user,
       };
-      session.token = token;
       // @ts-ignore TODO:
       session.user.id = user.id;
+      session.token = token;
       return session;
     },
   },
