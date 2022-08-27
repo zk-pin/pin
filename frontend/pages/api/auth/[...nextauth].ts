@@ -1,11 +1,8 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import NextAuth, { Account, Profile, User } from "next-auth";
+import NextAuth from "next-auth";
 import TwitterProvider from "next-auth/providers/twitter";
+import prisma from "@utils/prisma";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
-import { JWT } from "next-auth/jwt";
-
-const prisma = new PrismaClient();
 
 export default NextAuth({
   adapter: PrismaAdapter(prisma),
