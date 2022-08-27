@@ -83,6 +83,7 @@ const CreatePool: NextPage = ({ }) => {
 
     try {
       const body = { title, description, threshold, publicKey };
+      console.log('create body', body);
       const result = await fetch("/api/newPool", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
