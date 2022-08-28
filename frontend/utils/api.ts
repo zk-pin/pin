@@ -148,7 +148,7 @@ export const addRevealedSigner = async (
 ) => {
   const body = {
     // appending all userIds
-    newRevealedSigners: [...revealedPublicKeys.map((el) => el.id), userId],
+    newRevealedSigners: [...revealedPublicKeys.map((el) => el.user.id), userId],
     commitmentPoolId: commitmentPoolId,
   };
   return await fetch(`/api/addRevealedSigner`, {

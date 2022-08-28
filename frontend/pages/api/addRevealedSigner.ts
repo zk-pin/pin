@@ -8,14 +8,31 @@ export default async function addRevealedSigner(
   res: NextApiResponse<VKeyRespData | any>
 ) {
   try {
+    // newRevealedSigners is a list of user ids
     const { newRevealedSigners, commitmentPoolId } = req.body;
+    const revealedPublicKeysIds: number[] = [];
+
+    newRevealedSigners.map(async (userId: string) => {
+      const newRevealed = await prisma.revealedSignatureWithProof.create({
+        data: {
+          user: {
+            connect: { id: userId },
+          },
+          commitmentPool: {
+            connect: { id: commitmentPoolId },
+          },
+          ipfsHash: "",
+        },
+      });
+      revealedPublicKeysIds.push(newRevealed.id);
+    });
     await prisma.commitmentPool.update({
       where: {
         id: commitmentPoolId,
       },
       data: {
         revealedPublicKeys: {
-          set: newRevealedSigners.map((signer: string) => {
+          set: revealedPublicKeysIds.map((signer: number) => {
             return {
               id: signer,
             };
