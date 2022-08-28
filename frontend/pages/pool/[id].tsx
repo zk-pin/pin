@@ -302,14 +302,14 @@ export const getServerSideProps: GetServerSideProps = async ({
 }): Promise<any> => {
   const session = await unstable_getServerSession(req, res, authOptions); // need unstable for prod
 
-  if (!session) {
-    return {
-      redirect: {
-        destination: '/',
-        permanent: false,
-      },
-    }
-  }
+  // if (!session) {
+  //   return {
+  //     redirect: {
+  //       destination: '/',
+  //       permanent: false,
+  //     },
+  //   }
+  // }
   const pool = await prisma.commitmentPool.findUnique({
     where: {
       id: Number(params?.id) || -1,
@@ -370,9 +370,9 @@ export const getServerSideProps: GetServerSideProps = async ({
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
         signatures: JSON.parse(JSON.stringify(signatures)),
-        nextAuthSession: {
+        nextAuthSession: session ? {
           ...JSON.parse(JSON.stringify(session)),
-        },
+        } : null,
       },
     };
   } else {
@@ -381,9 +381,9 @@ export const getServerSideProps: GetServerSideProps = async ({
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
         signatures: signatures.map(() => ""),
-        nextAuthSession: {
+        nextAuthSession: session ? {
           ...JSON.parse(JSON.stringify(session)),
-        },
+        } : null,
       },
     };
   }
