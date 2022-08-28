@@ -8,7 +8,12 @@ import assert from "assert";
 import { createMerkleTree, hashBigIntArr } from "./zkp";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 import { encrypt, decrypt } from "maci-crypto";
-import { ISignature, ProofInput, SerializedKeyPair } from "./types";
+import {
+  IDecryptedSigners,
+  ISignature,
+  ProofInput,
+  SerializedKeyPair,
+} from "./types";
 
 export const DELIMETER = "%--%";
 
@@ -207,15 +212,8 @@ export const decryptCipherTexts = (
   signatures: ISignature[],
   commitmentPoolId: number
 ) => {
-  const newPair = new Keypair(
-    new PrivKey(
-      BigInt(
-        "16347038065085415515844966536025757295866187560037242692458081396051801605521"
-      )
-    )
-  );
   const operatorPrivateKey = new PrivKey(BigInt(operatorPrivateKeyString));
-  const revealedSigners: string[] = [];
+  const revealedSigners: IDecryptedSigners[] = [];
   const serializedPublicKeySet = new Set(serializedPublicKeys);
   signatures.forEach((signature) => {
     const cipherText = {
@@ -233,9 +231,10 @@ export const decryptCipherTexts = (
 
       const decryptAttempt = decrypt(cipherText, sharedSecret);
       if (Number(decryptAttempt[0]) === commitmentPoolId) {
-        console.log("found a match", decryptAttempt, commitmentPoolId);
-        revealedSigners.push(serializedPubKey);
-        // serializedPublicKeySet.delete(serializedPubKey);
+        revealedSigners.push({
+          serializedPubKey,
+          ipfsHash: signature.ipfs.ipfsHash,
+        });
       }
     });
   });

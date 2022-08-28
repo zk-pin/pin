@@ -2,7 +2,7 @@ import { Keypair } from "maci-domainobjs";
 import CommitmentPool from "pages/pool/[id]";
 import { serializePubKey } from "./crypto";
 import { addSignerDataToCache } from "./dexie";
-import { IRevealedSigners } from "./types";
+import { IDecryptedSigners, IRevealedSigners } from "./types";
 
 export async function updateUserPublicKey(id: string, publicKey: string) {
   const body = {
@@ -45,7 +45,7 @@ export async function setSignature(
 
 export async function revealCommitmentPool(
   commitmentPoolId: string,
-  revealedSigners: string[]
+  revealedSigners: IDecryptedSigners[]
 ) {
   const body = {
     id: commitmentPoolId,
@@ -96,11 +96,6 @@ export const checkCachedSignerData = (
       (res) => {
         if (res.status === 409) {
           res.json().then((body) => {
-            console.log(
-              "status 409, sync server pubkey",
-              cachedSigner.publicKey,
-              body.publicKey
-            );
             if (body.publicKey !== cachedSigner.publicKey) {
               // public key in server does not match local
               toast({

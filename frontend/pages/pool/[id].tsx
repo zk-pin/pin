@@ -111,7 +111,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const signAttestation = async () => {
     try {
       setIsLoading(true);
-      console.log('SIGNING DUDE', session, !session || !session.user, !session, !session.user, !cachedSigner?.privateKey)
       if (!session || !session.user || !cachedSigner?.privateKey) {
         toast({
           title:
@@ -258,14 +257,17 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
           <Text as="h1" textAlign="center">
             {props.title}
           </Text>
-          <Text>
+          <Text as="h3">
             Created at: {new Date(Date.parse(props.created_at)).toDateString()}{" "}
             {new Date(Date.parse(props.created_at)).toLocaleTimeString()}{" "}
           </Text>
-          {(!revealedPublicKeys || revealedPublicKeys.length === 0) && <Text>
-            {props.signatures.length || 0}/{props.threshold} signatures
-          </Text>}
-          {props.description && <Text>{props.description}</Text>}
+          {(!revealedPublicKeys || revealedPublicKeys.length === 0) &&
+            <Text as="h3">
+              {props.signatures.length || 0}/{props.threshold} signatures
+            </Text>}
+          {props.description &&
+            <Text fontSize='1rem'>{props.description}</Text>
+          }
           {!session && <Text color="gray.600">Please sign in to attest</Text>}
           {!alreadySigned ? (
             <Button disabled={!session} onClick={signAttestation}>
@@ -325,9 +327,14 @@ export const getServerSideProps: GetServerSideProps = async ({
       },
       revealedPublicKeys: {
         select: {
-          name: true,
-          serializedPublicKey: true,
-          id: true,
+          user: {
+            select: {
+              name: true,
+              id: true,
+              serializedPublicKey: true,
+            }
+          },
+          ipfsHash: true,
         },
       },
     },
@@ -350,6 +357,10 @@ export const getServerSideProps: GetServerSideProps = async ({
     },
     select: {
       ciphertext: true,
+      ipfs: {
+        select:
+          { ipfsHash: true, }
+      },
     },
   });
 

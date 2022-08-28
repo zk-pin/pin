@@ -5,12 +5,13 @@ import Link from 'next/link';
 import { Image as ChakraImage } from '@chakra-ui/react'
 import { useLiveQuery } from "dexie-react-hooks";
 import { checkCachedSignerData } from "@utils/api";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCachedSignerData } from "@utils/dexie";
 
 export const NavBar = () => {
   const router = useRouter();
   const toast = useToast();
+  const [isCheckingCachedSigner, setIsCheckingCachedSigner] = useState(false);
   const isActive: (pathname: string) => boolean = (pathname) =>
     router.pathname === pathname;
 
@@ -32,6 +33,7 @@ export const NavBar = () => {
   }
 
   useEffect(() => {
+    if (loadingCachedSigned) { return; }
     if (session) {
       checkCachedSignerData(cachedSigner, session, toast);
     }

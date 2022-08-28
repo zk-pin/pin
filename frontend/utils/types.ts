@@ -13,9 +13,12 @@ export type CommitmentPoolProps = {
 };
 
 export type IRevealedSigners = {
-  id: string;
-  name: string;
-  serializedPublicKey: string;
+  user: {
+    id: string;
+    name: string;
+    serializedPublicKey: string;
+  };
+  ipfsHash: string;
 };
 
 export type IOperator = {
@@ -46,10 +49,17 @@ export type VKeyRespData = {
 export type ISignature = {
   ciphertext: string[];
   commitment_poolId: string | number;
+  ipfs: { ipfsHash: string }; // nested in return
+};
+
+export type IDecryptedSigners = {
+  serializedPubKey: string;
+  ipfsHash: string;
 };
 
 /** for Dexie */
 import Dexie from "dexie";
+import { string } from "yup";
 export class DexieDatabase extends Dexie {
   commitmentPools!: Dexie.Table<ICommitmentPools, number>;
   signers!: Dexie.Table<ISigner, number>;
