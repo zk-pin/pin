@@ -32,9 +32,9 @@ export default async function addRevealedSigner(
       },
       data: {
         revealedPublicKeys: {
-          set: revealedPublicKeysIds.map((signer: number) => {
+          set: revealedPublicKeysIds.map((revealedPublicKeyId: number) => {
             return {
-              id: signer,
+              id: revealedPublicKeyId,
             };
           }),
         },

@@ -18,7 +18,7 @@ export const RevealedSignersList = ({ revealedSigners }: { revealedSigners: IRev
           <Text width='100%'>
             Public key: {user.serializedPublicKey}
           </Text>
-          <Text>
+          {ipfsHash && <Text>
             Proof link (ipfs): {` `}
             <ChakraLink
               href={`http://gateway.pinata.cloud/ipfs/${ipfsHash}`}
@@ -29,7 +29,7 @@ export const RevealedSignersList = ({ revealedSigners }: { revealedSigners: IRev
             >
               {ipfsHash}
             </ChakraLink>
-          </Text>
+          </Text>}
         </VStack>
       })}
     </Box>
