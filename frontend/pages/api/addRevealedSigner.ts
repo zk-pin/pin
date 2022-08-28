@@ -10,31 +10,44 @@ export default async function addRevealedSigner(
   try {
     // newRevealedSigners is a list of user ids
     const { newRevealedSigners, commitmentPoolId } = req.body;
-    const revealedPublicKeysIds: number[] = [];
-
-    newRevealedSigners.map(async (userId: string) => {
-      const newRevealed = await prisma.revealedSignatureWithProof.create({
-        data: {
-          user: {
-            connect: { id: userId },
-          },
-          commitmentPool: {
-            connect: { id: commitmentPoolId },
-          },
-          ipfsHash: "",
+    const newRevealed = await prisma.revealedSignatureWithProof.create({
+      data: {
+        user: {
+          connect: { id: newRevealedSigners[-1] },
         },
-      });
-      revealedPublicKeysIds.push(newRevealed.id);
+        commitmentPool: {
+          connect: { id: commitmentPoolId },
+        },
+        ipfsHash: "",
+      },
     });
+
+    const prevCommitmentPool = await prisma.commitmentPool.findUnique({
+      where: { id: commitmentPoolId },
+      select: {
+        revealedPublicKeys: true,
+      },
+    });
+
+    if (!prevCommitmentPool?.revealedPublicKeys) {
+      res.status(400).json({ msg: "this commitment pool does not exist" });
+      return;
+    }
+
+    const newRevealedSignerState = [
+      ...prevCommitmentPool?.revealedPublicKeys,
+      newRevealed,
+    ];
+
     await prisma.commitmentPool.update({
       where: {
         id: commitmentPoolId,
       },
       data: {
         revealedPublicKeys: {
-          set: revealedPublicKeysIds.map((revealedPublicKeyId: number) => {
+          set: newRevealedSignerState.map((revealedPublicKey) => {
             return {
-              id: revealedPublicKeyId,
+              id: revealedPublicKey.id,
             };
           }),
         },
