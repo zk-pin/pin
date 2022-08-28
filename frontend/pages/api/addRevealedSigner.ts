@@ -13,7 +13,7 @@ export default async function addRevealedSigner(
     const newRevealed = await prisma.revealedSignatureWithProof.create({
       data: {
         user: {
-          connect: { id: newRevealedSigners[-1] },
+          connect: { id: newRevealedSigners[newRevealedSigners.length - 1] },
         },
         commitmentPool: {
           connect: { id: commitmentPoolId },
