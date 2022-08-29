@@ -12,7 +12,11 @@ import {
   getPublicKeyFromPrivate,
 } from "@utils/crypto";
 import { generateProof } from "@utils/zkp";
-import { addRevealedSigner, revealCommitmentPool, setSignature } from "@utils/api";
+import {
+  addRevealedSigner,
+  revealCommitmentPool,
+  setSignature,
+} from "@utils/api";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   addOperatorDataToCache,
@@ -40,7 +44,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   // figure out if this is already revealed
   const revealedPublicKeys = useMemo(() => {
     return props.revealedPublicKeys;
-  }, [props])
+  }, [props]);
 
   const toast = useToast();
   const router = useRouter();
@@ -112,6 +116,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     try {
       setIsLoading(true);
       if (!session || !session.user || !cachedSigner?.privateKey) {
+        console.log(session, cachedSigner);
         toast({
           title:
             "Uh oh something went wrong with your session, can you try again?",
@@ -126,14 +131,18 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       //if revealed
       if (revealedPublicKeys.length !== 0) {
         // @ts-ignore TODO:
-        const addSignerRes = await addRevealedSigner(props.id, revealedPublicKeys, session.user.id);
+        const addSignerRes = await addRevealedSigner(
+          props.id,
+          revealedPublicKeys,
+          session.user.id
+        );
         setIsLoading(false);
         if (addSignerRes.status !== 200) {
           addSignerRes.json().then((body) => {
             throw new Error(
               `Error occurred adding signer to revealed signers: ${body}`
             );
-          })
+          });
         } else {
           await refreshData();
         }
@@ -261,13 +270,14 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
             Created at: {new Date(Date.parse(props.created_at)).toDateString()}{" "}
             {new Date(Date.parse(props.created_at)).toLocaleTimeString()}{" "}
           </Text>
-          {(!revealedPublicKeys || revealedPublicKeys.length === 0) &&
+          {(!revealedPublicKeys || revealedPublicKeys.length === 0) && (
             <Text as="h3">
               {props.signatures.length || 0}/{props.threshold} signatures
-            </Text>}
-          {props.description &&
-            <Text fontSize='1rem'>{props.description}</Text>
-          }
+            </Text>
+          )}
+          {props.description && (
+            <Text fontSize="1rem">{props.description}</Text>
+          )}
           {!session && <Text color="gray.600">Please sign in to attest</Text>}
           {!alreadySigned ? (
             <Button disabled={!session} onClick={signAttestation}>
@@ -276,17 +286,19 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
           ) : (
             <Button disabled>Already signed!</Button>
           )}
-          {isOperator && revealedPublicKeys && revealedPublicKeys.length === 0 && props.signatures.length < props.threshold && (
-            <WaitForThreshold />
-          )}
-          {isOperator
-            && props.signatures.length >= props.threshold && revealedPublicKeys && revealedPublicKeys.length === 0
-            && (
+          {isOperator &&
+            revealedPublicKeys &&
+            revealedPublicKeys.length === 0 &&
+            props.signatures.length < props.threshold && <WaitForThreshold />}
+          {isOperator &&
+            props.signatures.length >= props.threshold &&
+            revealedPublicKeys &&
+            revealedPublicKeys.length === 0 && (
               <ReadyForReveal startReveal={startReveal} />
             )}
-          {revealedPublicKeys?.length > 0 &&
+          {revealedPublicKeys?.length > 0 && (
             <RevealedSignersList revealedSigners={revealedPublicKeys} />
-          }
+          )}
           {isLoading && <Spinner />}
           {!isOperator && !revealedPublicKeys && (
             <OperatorPrivateInput submitPrivateKeyForm={submitPrivateKeyForm} />
@@ -298,7 +310,9 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async ({
-  req, res, params,
+  req,
+  res,
+  params,
 }): Promise<any> => {
   const session = await unstable_getServerSession(req, res, authOptions); // need unstable for prod
 
@@ -333,7 +347,7 @@ export const getServerSideProps: GetServerSideProps = async ({
               name: true,
               id: true,
               serializedPublicKey: true,
-            }
+            },
           },
           ipfsHash: true,
         },
@@ -359,8 +373,7 @@ export const getServerSideProps: GetServerSideProps = async ({
     select: {
       ciphertext: true,
       ipfs: {
-        select:
-          { ipfsHash: true, }
+        select: { ipfsHash: true },
       },
     },
   });
@@ -371,9 +384,11 @@ export const getServerSideProps: GetServerSideProps = async ({
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
         signatures: JSON.parse(JSON.stringify(signatures)),
-        nextAuthSession: session ? {
-          ...JSON.parse(JSON.stringify(session)),
-        } : null,
+        nextAuthSession: session
+          ? {
+              ...JSON.parse(JSON.stringify(session)),
+            }
+          : null,
       },
     };
   } else {
@@ -382,9 +397,11 @@ export const getServerSideProps: GetServerSideProps = async ({
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
         signatures: signatures.map(() => ""),
-        nextAuthSession: session ? {
-          ...JSON.parse(JSON.stringify(session)),
-        } : null,
+        nextAuthSession: session
+          ? {
+              ...JSON.parse(JSON.stringify(session)),
+            }
+          : null,
       },
     };
   }
