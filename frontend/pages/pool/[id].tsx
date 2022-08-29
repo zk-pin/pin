@@ -46,7 +46,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const router = useRouter();
 
   const refreshData = () => {
-    // TODO: move to helper
     router.replace(router.asPath);
   };
 
@@ -74,7 +73,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
       return;
     }
     const operatorUserId = cachedCommitmentPoolData?.operatorUserId;
-    // @ts-ignore TODO:
     if (!operatorUserId) {
       setIsOperator(false);
       // @ts-ignore TODO:

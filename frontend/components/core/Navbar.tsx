@@ -11,7 +11,6 @@ import { getCachedSignerData } from "@utils/dexie";
 export const NavBar = () => {
   const router = useRouter();
   const toast = useToast();
-  const [isCheckingCachedSigner, setIsCheckingCachedSigner] = useState(false);
   const isActive: (pathname: string) => boolean = (pathname) =>
     router.pathname === pathname;
 
@@ -37,6 +36,7 @@ export const NavBar = () => {
     if (session) {
       checkCachedSignerData(cachedSigner, session, toast);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   return (<Flex

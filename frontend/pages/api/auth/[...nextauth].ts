@@ -8,7 +8,6 @@ export const authOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXT_AUTH_SECRET,
   providers: [
-    // TODO: validate that id and secret are valid
     TwitterProvider({
       clientId: process.env.TWITTER_CLIENT_ID || "",
       clientSecret: process.env.TWITTER_CLIENT_SECRET || "",
@@ -25,7 +24,6 @@ export const authOptions = {
       user: any;
       token: any;
     }) {
-      console.log("session: ", session, " user: ", user);
       // Send properties to the client, like an access_token from a provider.
       session.user = {
         ...user,

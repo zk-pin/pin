@@ -6,10 +6,10 @@ export type CommitmentPoolProps = {
   operator: IOperator;
   description?: string;
   threshold: number;
-  signatures: any[];
+  signatures: ISignature[];
   revealedPublicKeys: IRevealedSigners[];
   serializedPublicKeys: string[];
-  nextAuthSession: any; // TODO: fix types
+  nextAuthSession: any;
 };
 
 export type IRevealedSigners = {
@@ -57,6 +57,7 @@ export type IDecryptedSigners = {
   ipfsHash: string;
 };
 
+import { Session } from "@prisma/client";
 /** for Dexie */
 import Dexie from "dexie";
 import { string } from "yup";
