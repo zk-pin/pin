@@ -33,7 +33,7 @@ export const NavBar = () => {
   }
 
   useEffect(() => {
-    if (loadingCachedSigned) { return; }
+    if (loadingCachedSigned.current) { return; }
     if (session) {
       checkCachedSignerData(cachedSigner, session, toast);
     }
