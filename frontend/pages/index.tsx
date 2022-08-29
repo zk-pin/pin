@@ -46,9 +46,11 @@ const Home: NextPage<Props> = ({ pools }) => {
           <Text fontWeight="bold" className={styles.description}>
             Active Commitment Pools
           </Text>
-          {session && <Link href="/create">
-            <Button>Create Commitment Pool</Button>
-          </Link>}
+          {session && (
+            <Link href="/create">
+              <Button>Create Commitment Pool</Button>
+            </Link>
+          )}
           <PoolList commitmentPools={pools} />
         </VStack>
       </Box>
@@ -59,7 +61,6 @@ const Home: NextPage<Props> = ({ pools }) => {
 export const getStaticProps: GetStaticProps = async () => {
   const pools = await prisma.commitmentPool.findMany({
     include: {
-      signatures: true,
       revealedPublicKeys: true,
     },
   });
