@@ -55,7 +55,7 @@ export const NavBar = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
+  }, [session, cachedSigner]);
 
   return (
     <Flex
