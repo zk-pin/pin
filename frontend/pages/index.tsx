@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { PoolList } from "@components/PoolListItem";
 import { NavBar } from "../components/core/Navbar";
+import { checkCachedSignerData } from "../utils/api";
 
 type Props = {
   pools: CommitmentPoolProps[];
