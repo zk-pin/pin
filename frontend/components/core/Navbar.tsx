@@ -80,7 +80,7 @@ export const NavBar = () => {
       {!session && status !== "loading" && (
         <Button
           size="lg"
-          onClick={() => console.log("cheeky")}
+          onClick={() => signInTwitter()}
           isActive={isActive("/signup")}
         >
           Login
