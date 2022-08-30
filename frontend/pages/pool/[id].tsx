@@ -114,7 +114,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
     try {
       setIsLoading(true);
       if (!session || !session.user || !cachedSigner?.privateKey) {
-        console.log(session, cachedSigner);
         toast({
           title:
             "Uh oh something went wrong with your session, can you try again?",
@@ -384,8 +383,8 @@ export const getServerSideProps: GetServerSideProps = async ({
         signatures: JSON.parse(JSON.stringify(signatures)),
         nextAuthSession: session
           ? {
-              ...JSON.parse(JSON.stringify(session)),
-            }
+            ...JSON.parse(JSON.stringify(session)),
+          }
           : null,
       },
     };
@@ -397,8 +396,8 @@ export const getServerSideProps: GetServerSideProps = async ({
         signatures: signatures.map(() => ""),
         nextAuthSession: session
           ? {
-              ...JSON.parse(JSON.stringify(session)),
-            }
+            ...JSON.parse(JSON.stringify(session)),
+          }
           : null,
       },
     };

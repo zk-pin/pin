@@ -40,7 +40,6 @@ export const NavBar = () => {
   };
 
   const refreshData = () => {
-    // TODO: move to helper
     router.replace(router.asPath);
   };
 
