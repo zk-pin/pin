@@ -63,7 +63,7 @@ export const checkCachedSignerData = (
   cachedSigner: { publicKey: string; privateKey: string } | undefined,
   session: any,
   toast: any
-) => {
+): boolean | undefined => {
   if (session || !cachedSigner) {
     const newPair = new Keypair();
     const pubKey = serializePubKey(newPair);
@@ -80,6 +80,7 @@ export const checkCachedSignerData = (
           duration: 100000,
           isClosable: true,
         });
+        return true;
       } else if (res.status === 409) {
         // server already has a public key, out of sync
         res.json().then((body) => {
@@ -120,6 +121,7 @@ export const checkCachedSignerData = (
       if (res.status === 200) {
         //@ts-ignore TODO:
         addSignerDataToCache(session.user.id, pubKey, privKey);
+        return true;
       } else if (res.status === 409) {
         // server already has a public key, out of sync
         toast({
@@ -139,6 +141,8 @@ export const checkCachedSignerData = (
       isClosable: true,
     });
   }
+
+  return false;
 };
 
 export const addRevealedSigner = async (
