@@ -27,25 +27,10 @@ export const NavBar = () => {
 
   const cachedSigner = useLiveQuery(async () => {
     if (!session) {
-      console.log("no session, me out");
       return;
     }
     // @ts-ignore TODO:
     const signerData = await getCachedSignerData(session.user.id);
-
-    console.log("found cache");
-
-    if (loadingCachedSigned.current) {
-      const newKeyIssued = await checkCachedSignerData(
-        cachedSigner,
-        session,
-        toast
-      );
-
-      if (newKeyIssued) {
-        refreshData();
-      }
-    }
 
     loadingCachedSigned.current = false;
     return signerData;
@@ -59,18 +44,18 @@ export const NavBar = () => {
     router.replace(router.asPath);
   };
 
-  // useEffect(() => {
-  //   if (loadingCachedSigned.current) {
-  //     return;
-  //   }
-  //   if (session) {
-  //     const newKeyIssued = checkCachedSignerData(cachedSigner, session, toast);
-  //     if (newKeyIssued) {
-  //       refreshData();
-  //     }
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [session]);
+  useEffect(() => {
+    if (loadingCachedSigned.current) {
+      return;
+    }
+    if (session) {
+      const newKeyIssued = checkCachedSignerData(cachedSigner, session, toast);
+      if (newKeyIssued) {
+        refreshData();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   return (
     <Flex
