@@ -13,7 +13,6 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { PoolList } from "@components/PoolListItem";
-import { Signature } from "@prisma/client";
 
 type Props = {
   pools: CommitmentPoolProps[];
