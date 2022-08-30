@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { PoolList } from "@components/PoolListItem";
+import { Signature } from "@prisma/client";
 
 type Props = {
   pools: CommitmentPoolProps[];
@@ -62,8 +63,15 @@ export const getStaticProps: GetStaticProps = async () => {
   const pools = await prisma.commitmentPool.findMany({
     include: {
       revealedPublicKeys: true,
+      signatures: true,
     },
   });
+
+  pools.forEach((pool) => {
+    // need this to display how many signatures on the home screen
+    pool.signatures = pool.signatures.map(() => "" as any)
+  })
+
   return {
     props: { pools: JSON.parse(JSON.stringify(pools)) },
     revalidate: 10,

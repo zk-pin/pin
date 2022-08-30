@@ -7,6 +7,7 @@ type Props = {
 }
 
 const PoolListItem = ({ pool }: Props) => {
+  console.log('sig', pool.signatures?.length)
   return (
     <Link href={`pool/${pool.id}`}>
       <Box
