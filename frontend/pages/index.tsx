@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { PoolList } from "@components/PoolListItem";
+import { NavBar } from "../components/core/Navbar";
 
 type Props = {
   pools: CommitmentPoolProps[];
@@ -23,6 +24,7 @@ const Home: NextPage<Props> = ({ pools }) => {
 
   return (
     <Box className={styles.container}>
+      <NavBar />
       <Box className={styles.main}>
         <VStack gap={2}>
           <h1 className={styles.title}>Welcome to Power in Numbers!</h1>
@@ -68,8 +70,8 @@ export const getStaticProps: GetStaticProps = async () => {
 
   pools.forEach((pool) => {
     // need this to display how many signatures on the home screen
-    pool.signatures = pool.signatures.map(() => "" as any)
-  })
+    pool.signatures = pool.signatures.map(() => "" as any);
+  });
 
   return {
     props: { pools: JSON.parse(JSON.stringify(pools)) },

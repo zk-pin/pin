@@ -14,7 +14,6 @@ import {
 import { generateProof } from "@utils/zkp";
 import {
   addRevealedSigner,
-  checkCachedSignerData,
   revealCommitmentPool,
   setSignature,
 } from "@utils/api";
@@ -34,6 +33,7 @@ import {
 } from "@components/OperatorComponents";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import { unstable_getServerSession } from "next-auth";
+import { NavBar } from "../../components/core/Navbar";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const session = props.nextAuthSession;
@@ -113,21 +113,17 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
   const signAttestation = async () => {
     try {
+      setIsLoading(true);
       if (!session || !session.user || !cachedSigner?.privateKey) {
-        if (session && session.user && !cachedSigner?.privateKey) {
-          //create new private key
-          await checkCachedSignerData(cachedSigner, session, toast);
-        } else {
-          toast({
-            title:
-              "Uh oh something went wrong with your session, can you try again?",
-            status: "error",
-            duration: 3000,
-            isClosable: true,
-          });
-          setIsLoading(false);
-          return;
-        }
+        toast({
+          title:
+            "Uh oh something went wrong with your session, can you try again?",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+        setIsLoading(false);
+        return;
       }
 
       //if revealed
@@ -263,6 +259,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
   return (
     <Box className={styles.container}>
+      <NavBar />
       <Box className={styles.main}>
         <VStack gap={4}>
           <Text as="h1" textAlign="center">
