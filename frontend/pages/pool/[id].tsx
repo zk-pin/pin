@@ -14,6 +14,7 @@ import {
 import { generateProof } from "@utils/zkp";
 import {
   addRevealedSigner,
+  checkCachedSignerData,
   revealCommitmentPool,
   setSignature,
 } from "@utils/api";
@@ -112,17 +113,21 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
   const signAttestation = async () => {
     try {
-      setIsLoading(true);
       if (!session || !session.user || !cachedSigner?.privateKey) {
-        toast({
-          title:
-            "Uh oh something went wrong with your session, can you try again?",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-        setIsLoading(false);
-        return;
+        if (session && session.user && !cachedSigner?.privateKey) {
+          //create new private key
+          await checkCachedSignerData(cachedSigner, session, toast);
+        } else {
+          toast({
+            title:
+              "Uh oh something went wrong with your session, can you try again?",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
+          setIsLoading(false);
+          return;
+        }
       }
 
       //if revealed
@@ -374,8 +379,8 @@ export const getServerSideProps: GetServerSideProps = async ({
         signatures: JSON.parse(JSON.stringify(signatures)),
         nextAuthSession: session
           ? {
-            ...JSON.parse(JSON.stringify(session)),
-          }
+              ...JSON.parse(JSON.stringify(session)),
+            }
           : null,
       },
     };
@@ -387,8 +392,8 @@ export const getServerSideProps: GetServerSideProps = async ({
         signatures: signatures.map(() => ""),
         nextAuthSession: session
           ? {
-            ...JSON.parse(JSON.stringify(session)),
-          }
+              ...JSON.parse(JSON.stringify(session)),
+            }
           : null,
       },
     };
