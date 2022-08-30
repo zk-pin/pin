@@ -37,7 +37,6 @@ export const NavBar = () => {
   }, [session, session?.user]);
 
   const signInTwitter = () => {
-    console.log("HELLOOOOO!");
     signIn();
   };
 
