@@ -68,11 +68,13 @@ export const checkCachedSignerData = (
     const newPair = new Keypair();
     const pubKey = serializePubKey(newPair);
     const privKey = newPair.privKey.rawPrivKey.toString();
+    console.log("Attempting to update user public key.");
     //@ts-ignore TODO:
     updateUserPublicKey(session.user.id, pubKey).then((res) => {
       if (res.status === 200) {
         //@ts-ignore TODO:
         addSignerDataToCache(session.user.id, pubKey, privKey);
+        console.log("successfully updated user public key");
         toast({
           title:
             "Great! Issued a new private key. Please save this: " + privKey,
@@ -142,6 +144,7 @@ export const checkCachedSignerData = (
     });
   }
 
+  console.log("all done with updates");
   return false;
 };
 
