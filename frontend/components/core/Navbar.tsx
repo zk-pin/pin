@@ -36,6 +36,7 @@ export const NavBar = () => {
   }, [session, session?.user]);
 
   const signInTwitter = () => {
+    console.log("HELLOOOOO!");
     signIn();
   };
 
@@ -79,7 +80,7 @@ export const NavBar = () => {
       {!session && status !== "loading" && (
         <Button
           size="lg"
-          onClick={() => signInTwitter()}
+          onClick={() => console.log("cheeky")}
           isActive={isActive("/signup")}
         >
           Login
