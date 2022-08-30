@@ -22,7 +22,9 @@ npm run dev
 yarn dev
 ```
 
-Circuit construction:
+The demo is live at [zkpin.xyz](https://www.zkpin.xyz/)
+
+## Circuit construction
 
 ```
 i generate c = sym_enc(msg, ecdh(my_priv, pool_pub))
