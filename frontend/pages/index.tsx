@@ -24,7 +24,6 @@ const Home: NextPage<Props> = ({ pools }) => {
 
   return (
     <Box className={styles.container}>
-      <NavBar />
       <Box className={styles.main}>
         <VStack gap={2}>
           <h1 className={styles.title}>Welcome to Power in Numbers!</h1>

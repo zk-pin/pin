@@ -10,6 +10,7 @@ import { Meta } from "@components/core/Meta";
 /* Auth */
 import { SessionProvider } from "next-auth/react";
 import Head from "next/head";
+import { NavBar } from "../components/core/Navbar";
 
 /* Theming */
 const theme = extendTheme({
@@ -105,6 +106,7 @@ function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
           <Head>
             <script src="/snarkjs.min.js" />
           </Head>
+          <NavBar />
           <Component {...pageProps} />
           <Footer />
         </ChakraProvider>
