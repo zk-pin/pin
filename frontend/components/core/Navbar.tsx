@@ -12,7 +12,7 @@ import Link from "next/link";
 import { Image as ChakraImage } from "@chakra-ui/react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { checkCachedSignerData } from "@utils/api";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { getCachedSignerData } from "@utils/dexie";
 
 export const NavBar = () => {
@@ -25,10 +25,8 @@ export const NavBar = () => {
 
   const { data: session, status } = useSession();
 
-  console.log("session nav: ", session);
   const cachedSigner = useLiveQuery(async () => {
     if (!session) {
-      console.log("no session");
       return;
     }
 
@@ -37,7 +35,6 @@ export const NavBar = () => {
 
     //initial load, cache has not yet been created for this user.id
     if (!signerData && loadingCachedSigned.current) {
-      console.log("first use live query setting the cache");
       await checkCachedSignerData(signerData, session, toast);
     }
 
@@ -55,14 +52,9 @@ export const NavBar = () => {
 
   useEffect(() => {
     if (loadingCachedSigned.current) {
-      console.log("current is loading");
       return;
     }
     if (session) {
-      console.log(
-        "session is valid and loading cache in useEffect: ",
-        loadingCachedSigned.current
-      );
       const newKeyIssued = checkCachedSignerData(cachedSigner, session, toast);
       if (newKeyIssued) {
         refreshData();
