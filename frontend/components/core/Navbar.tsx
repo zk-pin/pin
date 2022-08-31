@@ -24,6 +24,7 @@ export const NavBar = () => {
   const loadingCachedSigned = useRef(true);
 
   const { data: session, status } = useSession();
+  console.log("session in navbar: ", session);
 
   const cachedSigner = useLiveQuery(async () => {
     if (!session) {
