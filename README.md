@@ -12,6 +12,9 @@ zkPIN is a basic implemention of this with snarks: users create commitment pools
 
 Home page shows a list of commitment pools. To interact with one or create your own, you need to log in. When you log in, a new private, public keypair is generated for you, and your private key is stored in local storage. No private key ever touches our server, only the public keys are stored on our end Once you log in, you can create a commitment pool (this will generate a new operator private, public keypair which is stored in local storage). Anyone who wants to sign a commitment pool can navigate to the pool on the home page, click it, then sign it. When you sign it, a new zkSNARK proof is generated that enforces some conditions which we describe below to ensure your attestation is valid. Full video of the demo is here:
 
+
+https://user-images.githubusercontent.com/7995105/187604173-e4f961f6-7c5d-4d5f-8d9e-41754c03a7e8.mp4
+
 ### Important notices about the construction
 
 In order to distribute the trust assumption before the threshold of signatures is reached, we designed the app in a trust-minimzed way, taking advantage of zkSNARKs to do so. The rough idea is that when we generate a signature, we create a SNARK proof that attests this signature was valid, keeping all revealing inputs private, **but allowing the operator + server to work together to derive the original signer after the threshold is reached**. When a user signs a commitment pool, we generate a zkSNARK proof and a ciphertext that is the symmetric encryption of the message (the commitment pool id) and a shared secret (between the operator and the signer). We'll explain some of this in more detail in the zkSNARK construction, but for now, we just need to know that the act of "signing" a commitment pool creates a zkSNARK proof (which we store on IPFS) and a ciphertext, which we store on our server.
