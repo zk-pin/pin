@@ -269,7 +269,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
           </Text>
           {(!revealedPublicKeys || revealedPublicKeys.length === 0) && (
             <Text as="h3">
-              {props.signaturesCount || 0}/{props.threshold} signatures
+              {props.signatures.length || 0}/{props.threshold} signatures
             </Text>
           )}
           {props.description && (
@@ -328,6 +328,11 @@ export const getServerSideProps: GetServerSideProps = async ({
           operator_key: true,
         },
       },
+      signatures: {
+        select: {
+          commitment_poolId: true,
+        },
+      },
       revealedPublicKeys: {
         select: {
           user: {
@@ -354,13 +359,8 @@ export const getServerSideProps: GetServerSideProps = async ({
     ).map((el) => el.serializedPublicKey),
   };
 
-  const signaturesCount = await prisma.signature.count({
-    where: {
-      commitment_poolId: pool?.id,
-    },
-  });
-
-  if (signaturesCount >= (pool?.threshold || 0)) {
+  console.log("pool: ", pool);
+  if (pool?.signatures.length >= (pool?.threshold || 0)) {
     const signatures = await prisma.signature.findMany({
       where: {
         commitment_poolId: pool?.id,
@@ -390,7 +390,7 @@ export const getServerSideProps: GetServerSideProps = async ({
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
         //TODO: hacky fix
-        signatures: new Array(signaturesCount),
+        signatures: pool?.signatures,
         nextAuthSession: session
           ? {
               ...JSON.parse(JSON.stringify(session)),

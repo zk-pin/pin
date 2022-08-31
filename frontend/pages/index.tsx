@@ -63,6 +63,12 @@ export const getStaticProps: GetStaticProps = async () => {
   const pools = await prisma.commitmentPool.findMany({
     include: {
       revealedPublicKeys: true,
+      //return non-revealing info about signatures in order to get the count
+      signatures: {
+        select: {
+          commitment_poolId: true,
+        },
+      },
     },
   });
 

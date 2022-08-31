@@ -16,12 +16,10 @@ export default async function handler(
     res.status(400).json({ msg: "mising a required field" });
     return;
   }
-  console.log("POST /api/newPool");
 
   try {
     // const session = await getSession({ req }); // need to use unstable for prod
     const session = await unstable_getServerSession(req, res, authOptions);
-    console.log("session", session);
     if (!session) {
       res.status(400).json({ msg: "you must be in an active session" });
       return;

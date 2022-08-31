@@ -27,7 +27,7 @@ import { CheckIcon, CopyIcon } from "@chakra-ui/icons";
 import { useSession } from "next-auth/react";
 import { addOperatorDataToCache } from "@utils/dexie";
 
-const CreatePool: NextPage = ({ }) => {
+const CreatePool: NextPage = ({}) => {
   const [keyPair, setKeyPair] = useState<SerializedKeyPair | undefined>(
     undefined
   );
@@ -83,7 +83,6 @@ const CreatePool: NextPage = ({ }) => {
 
     try {
       const body = { title, description, threshold, publicKey };
-      console.log('create body', body);
       const result = await fetch("/api/newPool", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -92,7 +91,13 @@ const CreatePool: NextPage = ({ }) => {
       if (result.status === 200 && session?.user) {
         var resultBody = await result.json();
         // @ts-ignore TODO:
-        addOperatorDataToCache(resultBody.id, publicKey, resultBody.operatorId, session.user.id, privateKey);
+        addOperatorDataToCache(
+          resultBody.id,
+          publicKey,
+          resultBody.operatorId,
+          session.user.id,
+          privateKey
+        );
         setSubmitted(true);
         setLoading(false);
       } else {
@@ -120,7 +125,11 @@ const CreatePool: NextPage = ({ }) => {
             onSubmit={createPoolForm.handleSubmit}
             style={{ width: "100%", maxWidth: "1000px" }}
           >
-            <VStack textAlign="start" justifyContent="start" alignContent="start">
+            <VStack
+              textAlign="start"
+              justifyContent="start"
+              alignContent="start"
+            >
               <Text fontWeight="bold">Title</Text>
               {createPoolForm.errors.title && (
                 <Text color="red.400">*{createPoolForm.errors.title}</Text>
@@ -135,7 +144,9 @@ const CreatePool: NextPage = ({ }) => {
               />
               <Text fontWeight="bold">Description</Text>
               {createPoolForm.errors.description && (
-                <Text color="red.400">*{createPoolForm.errors.description}</Text>
+                <Text color="red.400">
+                  *{createPoolForm.errors.description}
+                </Text>
               )}
               <Textarea
                 id="description"
@@ -160,7 +171,8 @@ const CreatePool: NextPage = ({ }) => {
                     onChange={(val) =>
                       createPoolForm.setFieldValue("threshold", val)
                     }
-                    value={createPoolForm.values.threshold}                  >
+                    value={createPoolForm.values.threshold}
+                  >
                     <NumberInputField borderRadius={0} />
                     <NumberInputStepper>
                       <NumberIncrementStepper />
