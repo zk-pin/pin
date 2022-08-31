@@ -24,15 +24,12 @@ export const NavBar = () => {
   const loadingCachedSigned = useRef(true);
 
   const { data: session, status } = useSession();
-  console.log("session in navbar: ", session);
 
   const cachedSigner = useLiveQuery(async () => {
     if (!session) {
-      console.log("no session fetching catch");
       return;
     }
 
-    console.log("fetching the cache");
     // @ts-ignore TODO:
     const signerData = await getCachedSignerData(session.user.id);
 
@@ -40,7 +37,6 @@ export const NavBar = () => {
     if (!signerData) {
       await checkCachedSignerData(signerData, session, toast);
     }
-    console.log("cache signer data returned: ", signerData);
 
     loadingCachedSigned.current = false;
     return signerData;
@@ -56,14 +52,11 @@ export const NavBar = () => {
 
   useEffect(() => {
     if (loadingCachedSigned.current) {
-      console.log("still loading");
       return;
     }
     if (session) {
-      console.log("session acquired to check cache");
       const newKeyIssued = checkCachedSignerData(cachedSigner, session, toast);
       if (newKeyIssued) {
-        console.log("cache is done");
         refreshData();
       }
     }

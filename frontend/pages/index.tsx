@@ -21,7 +21,6 @@ type Props = {
 
 const Home: NextPage<Props> = ({ pools }) => {
   const { data: session } = useSession();
-  console.log("session: ", session);
 
   return (
     <Box className={styles.container}>
