@@ -12,7 +12,6 @@ zkPIN is a basic implemention of this with snarks: users create commitment pools
 
 Home page shows a list of commitment pools. To interact with one or create your own, you need to log in. When you log in, a new private, public keypair is generated for you, and your private key is stored in local storage. No private key ever touches our server, only the public keys are stored on our end Once you log in, you can create a commitment pool (this will generate a new operator private, public keypair which is stored in local storage). Anyone who wants to sign a commitment pool can navigate to the pool on the home page, click it, then sign it. When you sign it, a new zkSNARK proof is generated that enforces some conditions which we describe below to ensure your attestation is valid. Full video of the demo is here:
 
-
 https://user-images.githubusercontent.com/7995105/187604173-e4f961f6-7c5d-4d5f-8d9e-41754c03a7e8.mp4
 
 ### Important notices about the construction
@@ -55,6 +54,12 @@ zkPIN has as we've discussed before, an honest minority trust assumption between
 -   some escrow style system which requires staking and slashes the server/operator if they don't reveal their part of the data when the threshold is reached.
     -   currently, a malicious operator may choose to never reveal their private key when the threshold is reached or vice versa with the server and the ciphertexts, preventing us from "revealing" the commitment pool. Implementing a basic contract which requires operators and the server to stake some money and then slashes them if they don't provide the data (within some time frame) would provide a better economic incentive for censorship-resistance. Some brief explorations for this can be found under `commit_reveal` but these are currently incomplete (although very possible and feasible to implement).
 -   to remove the need for an operator entirely, the gold standard would be having [threshold encryption](https://en.wikipedia.org/wiki/Threshold_cryptosystem) inside of a SNARK, that way we minimize trust at the lowest cryptography level, without the need for an operator.
+
+### Disclaimer
+
+Note this app is provided as a proof of concept, it has not been formally audited and as such there can be no assurance they will work as intended, and users may experience delays, failures, errors, omissions or loss of transmitted information. Authors are not liable for any of the foregoing. Users should proceed with caution and use at their own risk.
+
+If you see any issues or have ideas for improvements, we welcome PRs!
 
 ### Credits
 
