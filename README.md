@@ -1,5 +1,7 @@
 # zkPIN (power in numbers) - commitment pools with zkSNARKs
 
+A project by [Jaclyn](https://twitter.com/straightupjac) and [Amir](https://twitter.com/amirbolous).
+
 ### Intro
 
 **zkPIN is a new coordination mechanism built with zkSNARKs**. Vitalik has talked about the idea of [commitment pools](https://vitalik.ca/general/2022/06/12/nonfin.html) before, the problem is simple: you want to sign or endorse some idea, but you're only comfortable doing it publicly if enough other people also do so. Maybe it's some cancelable take, like "based is an annoying word shouldn't be used" (it's not, it's a great word, but you can imagine for things that are unpopular or more controversial people would only be comfortable sharing their endorsement if enough other people also do so), or something you don't feel comfortable initially sharing the idea of etc.
