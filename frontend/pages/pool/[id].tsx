@@ -33,7 +33,6 @@ import {
 } from "@components/OperatorComponents";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import { unstable_getServerSession } from "next-auth";
-import { NavBar } from "../../components/core/Navbar";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const session = props.nextAuthSession;
@@ -390,7 +389,8 @@ export const getServerSideProps: GetServerSideProps = async ({
       props: {
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
-        signaturesCount: signaturesCount,
+        //TODO: hacky fix
+        signatures: new Array(signaturesCount),
         nextAuthSession: session
           ? {
               ...JSON.parse(JSON.stringify(session)),
