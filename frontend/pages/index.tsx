@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { PoolList } from "@components/PoolListItem";
-import { checkCachedSignerData } from "../utils/api";
+import { NavBar } from "../components/core/Navbar";
 
 type Props = {
   pools: CommitmentPoolProps[];

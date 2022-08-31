@@ -33,6 +33,7 @@ import {
 } from "@components/OperatorComponents";
 import { authOptions } from "pages/api/auth/[...nextauth]";
 import { unstable_getServerSession } from "next-auth";
+import { NavBar } from "../../components/core/Navbar";
 
 const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
   const session = props.nextAuthSession;

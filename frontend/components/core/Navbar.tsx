@@ -12,7 +12,7 @@ import Link from "next/link";
 import { Image as ChakraImage } from "@chakra-ui/react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { checkCachedSignerData } from "@utils/api";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { getCachedSignerData } from "@utils/dexie";
 
 export const NavBar = () => {
@@ -29,14 +29,20 @@ export const NavBar = () => {
     if (!session) {
       return;
     }
+
     // @ts-ignore TODO:
     const signerData = await getCachedSignerData(session.user.id);
+
+    //initial load, cache has not yet been created for this user.id
+    if (!signerData && loadingCachedSigned.current) {
+      await checkCachedSignerData(signerData, session, toast);
+    }
+
     loadingCachedSigned.current = false;
     return signerData;
   }, [session, session?.user]);
 
   const signInTwitter = () => {
-    console.log("HELLOOOOO!");
     signIn();
   };
 
@@ -55,7 +61,7 @@ export const NavBar = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
+  }, [session, cachedSigner]);
 
   return (
     <Flex
@@ -80,7 +86,7 @@ export const NavBar = () => {
       {!session && status !== "loading" && (
         <Button
           size="lg"
-          onClick={() => console.log("cheeky")}
+          onClick={() => signInTwitter()}
           isActive={isActive("/signup")}
         >
           Login

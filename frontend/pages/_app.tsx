@@ -2,15 +2,15 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { ChakraProvider } from "@chakra-ui/react";
-import { theme as chakraTheme } from '@chakra-ui/react'
+import { theme as chakraTheme } from "@chakra-ui/react";
 import { extendTheme } from "@chakra-ui/react";
-import { NavBar } from "@components/core/Navbar";
 import Footer from "@components/core/Footer";
 import { Meta } from "@components/core/Meta";
 
 /* Auth */
 import { SessionProvider } from "next-auth/react";
 import Head from "next/head";
+import { NavBar } from "../components/core/Navbar";
 
 /* Theming */
 const theme = extendTheme({
@@ -23,18 +23,18 @@ const theme = extendTheme({
       variants: {
         solid: {
           borderWidth: 1,
-          backgroundColor: 'gray.50',
-          borderColor: 'gray.500',
-        }
-      }
+          backgroundColor: "gray.50",
+          borderColor: "gray.500",
+        },
+      },
     },
     Input: {
       baseStyle: {
         field: {
           borderRadius: 0,
-          borderColor: 'gray.800',
+          borderColor: "gray.800",
           _hover: {
-            borderColor: 'primary.foreground',
+            borderColor: "primary.foreground",
           },
         },
       },
@@ -42,35 +42,35 @@ const theme = extendTheme({
     Textarea: {
       baseStyle: {
         borderRadius: 0,
-        borderColor: 'gray.800',
+        borderColor: "gray.800",
         _hover: {
-          borderColor: 'primary.foreground',
+          borderColor: "primary.foreground",
         },
-      }
+      },
     },
     NumberInput: {
       baseStyle: {
         field: {
-          borderRadius: 'none',
-          borderColor: 'gray.800',
+          borderRadius: "none",
+          borderColor: "gray.800",
           _hover: {
-            borderColor: 'primary.foreground',
+            borderColor: "primary.foreground",
           },
         },
         stepper: {
-          borderRadius: 'none',
-          borderColor: 'gray.800',
+          borderRadius: "none",
+          borderColor: "gray.800",
           _hover: {
-            borderColor: 'primary.foreground',
+            borderColor: "primary.foreground",
           },
-        }
+        },
       },
-    }
+    },
   },
   fonts: {
     ...chakraTheme.fonts,
     body: `monospace`,
-    heading: `monospace`
+    heading: `monospace`,
   },
   styles: {
     global: {
