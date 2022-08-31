@@ -1,4 +1,4 @@
-# zkPIN - commitment pools with zkSNARKs
+# zkPIN (power in numbers) - commitment pools with zkSNARKs
 
 ### Intro
 
