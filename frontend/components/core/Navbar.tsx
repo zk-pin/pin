@@ -35,6 +35,11 @@ export const NavBar = () => {
     console.log("fetching the cache");
     // @ts-ignore TODO:
     const signerData = await getCachedSignerData(session.user.id);
+
+    //initial load, cache has not yet been created for this user.id
+    if (!signerData) {
+      await checkCachedSignerData(signerData, session, toast);
+    }
     console.log("cache signer data returned: ", signerData);
 
     loadingCachedSigned.current = false;
