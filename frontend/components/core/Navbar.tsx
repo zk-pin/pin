@@ -34,7 +34,7 @@ export const NavBar = () => {
     const signerData = await getCachedSignerData(session.user.id);
 
     //initial load, cache has not yet been created for this user.id
-    if (!signerData) {
+    if (!signerData && loadingCachedSigned.current) {
       await checkCachedSignerData(signerData, session, toast);
     }
 
