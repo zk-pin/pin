@@ -269,7 +269,7 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
           </Text>
           {(!revealedPublicKeys || revealedPublicKeys.length === 0) && (
             <Text as="h3">
-              {props.signatures.length || 0}/{props.threshold} signatures
+              {props.signaturesCount || 0}/{props.threshold} signatures
             </Text>
           )}
           {props.description && (
@@ -354,19 +354,24 @@ export const getServerSideProps: GetServerSideProps = async ({
     ).map((el) => el.serializedPublicKey),
   };
 
-  const signatures = await prisma.signature.findMany({
+  const signaturesCount = await prisma.signature.count({
     where: {
       commitment_poolId: pool?.id,
     },
-    select: {
-      ciphertext: true,
-      ipfs: {
-        select: { ipfsHash: true },
-      },
-    },
   });
 
-  if (signatures.length >= (pool?.threshold || 0)) {
+  if (signaturesCount >= (pool?.threshold || 0)) {
+    const signatures = await prisma.signature.findMany({
+      where: {
+        commitment_poolId: pool?.id,
+      },
+      select: {
+        ciphertext: true,
+        ipfs: {
+          select: { ipfsHash: true },
+        },
+      },
+    });
     return {
       props: {
         ...JSON.parse(JSON.stringify(pool)),
@@ -374,8 +379,8 @@ export const getServerSideProps: GetServerSideProps = async ({
         signatures: JSON.parse(JSON.stringify(signatures)),
         nextAuthSession: session
           ? {
-            ...JSON.parse(JSON.stringify(session)),
-          }
+              ...JSON.parse(JSON.stringify(session)),
+            }
           : null,
       },
     };
@@ -384,11 +389,11 @@ export const getServerSideProps: GetServerSideProps = async ({
       props: {
         ...JSON.parse(JSON.stringify(pool)),
         ...JSON.parse(JSON.stringify(sybilAddresses)),
-        signatures: signatures.map(() => ""),
+        signaturesCount: signaturesCount,
         nextAuthSession: session
           ? {
-            ...JSON.parse(JSON.stringify(session)),
-          }
+              ...JSON.parse(JSON.stringify(session)),
+            }
           : null,
       },
     };

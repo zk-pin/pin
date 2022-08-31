@@ -7,6 +7,7 @@ export type CommitmentPoolProps = {
   description?: string;
   threshold: number;
   signatures: ISignature[];
+  signaturesCount?: number;
   revealedPublicKeys: IRevealedSigners[];
   serializedPublicKeys: string[];
   nextAuthSession: any;

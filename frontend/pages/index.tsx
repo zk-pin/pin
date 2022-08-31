@@ -32,7 +32,7 @@ const Home: NextPage<Props> = ({ pools }) => {
               Login
             </Button>
           )}
-          {session && ( 
+          {session && (
             <HStack marginBottom={4}>
               <ChakraImage
                 alt={`${session.user?.name}'s profile picture`}
@@ -63,13 +63,7 @@ export const getStaticProps: GetStaticProps = async () => {
   const pools = await prisma.commitmentPool.findMany({
     include: {
       revealedPublicKeys: true,
-      signatures: true,
     },
-  });
-
-  pools.forEach((pool) => {
-    // need this to display how many signatures on the home screen
-    pool.signatures = pool.signatures.map(() => "" as any);
   });
 
   return {
