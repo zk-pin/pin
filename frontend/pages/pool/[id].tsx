@@ -259,7 +259,6 @@ const CommitmentPool: NextPage<CommitmentPoolProps> = (props) => {
 
   return (
     <Box className={styles.container}>
-      <NavBar />
       <Box className={styles.main}>
         <VStack gap={4}>
           <Text as="h1" textAlign="center">
